@@ -218,3 +218,61 @@
 #hqLandChoice{background:#557a35}
 #hqWaterChoice{background:#176f89}
 .hq-terrain-card small{display:block;margin-top:11px;font-size:10px;opacity:.72}
+
+.landscape-recommend{
+  margin:-8px 0 14px;
+  padding:7px 14px;
+  border-radius:999px;
+  background:#ffffff18;
+  border:1px solid #ffffff40;
+  font-weight:900;
+  font-size:12px;
+}
+
+/* マップ選択 */
+.map-select-overlay,.defender-select-overlay{
+  position:fixed;inset:0;z-index:180000;display:grid;place-items:center;
+  padding:18px;background:rgba(2,18,22,.94);text-align:center;
+}
+.map-select-overlay[hidden],.defender-select-overlay[hidden]{display:none !important}
+.map-select-card,.defender-select-card{
+  width:min(560px,95vw);padding:22px 18px;border-radius:24px;
+  background:#174540;border:2px solid #ffffff66;box-shadow:0 20px 60px #000b;
+}
+.map-select-card h2,.defender-select-card h2{margin:0 0 7px}
+.map-select-card p,.defender-select-card p{font-size:12px;opacity:.8}
+.map-select-buttons{display:grid;grid-template-columns:1fr;gap:9px;margin-top:13px}
+.map-select-buttons button{
+  border:2px solid #ffffff80;border-radius:17px;background:#ffffff18;color:#fff;
+  padding:13px 15px;text-align:left;font-weight:900;
+}
+.map-select-buttons b,.map-select-buttons small{display:block}
+.map-select-buttons b{font-size:16px}
+.map-select-buttons small{font-size:10px;opacity:.73;margin-top:3px}
+
+/* 複数敵が同じ地点にいるとき、攻撃側が相手を選択 */
+.defender-choices{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:13px}
+.defender-choice{
+  position:relative;border:2px solid #ffffff75;border-radius:16px;background:#ffffff16;
+  color:#fff;padding:12px 9px;font-weight:900;
+}
+.defender-choice strong,.defender-choice small{display:block}
+.defender-choice strong{font-size:14px}
+.defender-choice small{margin-top:4px;font-size:9px;opacity:.76}
+.defender-choice .mini-hp{height:6px;background:#2b2525;border-radius:9px;margin-top:7px;overflow:hidden}
+.defender-choice .mini-hp i{display:block;height:100%;background:#78ef88}
+.defender-cancel{
+  margin-top:11px;border:1px solid #fff7;border-radius:999px;background:#ffffff12;
+  color:#fff;padding:8px 18px;font-weight:900;
+}
+@media(max-width:480px){.defender-choices{grid-template-columns:1fr}}
+
+/* v0.18 工作兵 */
+.frog-pascal .map-frog{--frog:#71d85e;--frog-light:#a4f18a}
+.frog-malphas .map-frog{--frog:#744a8f;--frog-light:#b17ad0}
+.unit.frog-pascal,.unit.frog-malphas{transform:translate(-50%,-50%) scale(.78)}
+.trap-mark{position:absolute;z-index:17;transform:translate(-50%,-50%);font-size:17px;
+  width:25px;height:25px;display:grid;place-items:center;border-radius:50%;background:#101b1dcc;border:1px solid #fff8}
+.trap-mark.kawazu{box-shadow:0 0 0 2px #65df7d88}
+.trap-mark.beel{box-shadow:0 0 0 2px #d36a9d88}
+.trap-action{border:1px solid #fff7;border-radius:8px;background:#ffffff18;color:#fff;padding:3px 7px;font-weight:900}

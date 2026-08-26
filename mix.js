@@ -16,6 +16,14 @@ const hqTerrainText=document.getElementById('hqTerrainText');
 const hqLandChoice=document.getElementById('hqLandChoice');
 const hqWaterChoice=document.getElementById('hqWaterChoice');
 
+const mapSelectOverlay=document.getElementById('mapSelectOverlay');
+const defenderSelectOverlay=document.getElementById('defenderSelectOverlay');
+const defenderChoices=document.getElementById('defenderChoices');
+const defenderSelectText=document.getElementById('defenderSelectText');
+const defenderSelectCancel=document.getElementById('defenderSelectCancel');
+let selectedMap='map1';
+
+
 let mixDifficulty='normal';
 
 document.querySelectorAll('[data-difficulty]').forEach(btn=>{
@@ -26,10 +34,7 @@ document.querySelectorAll('[data-difficulty]').forEach(btn=>{
 });
 document.getElementById('mixStartButton').onclick=()=>{
   try{localStorage.setItem('kaeru_difficulty',mixDifficulty)}catch(e){}
-  mixTitle.hidden=true;
-  mixMain.hidden=false;
-  render();
-  say('カワズ軍のターン','総大将のカワズさんを守りながら、ベルゼブブ本拠地を目指してください。');
+  mapSelectOverlay.hidden=false;
 };
 document.getElementById('mixResultRestart').onclick=()=>{
   sessionStorage.clear();
@@ -37,65 +42,157 @@ document.getElementById('mixResultRestart').onclick=()=>{
 };
 
 
-const nodes={
- K:{x:8,y:70,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','WK']},
-
- // 陸地主ルート
- A:{x:21,y:65,name:'西あぜ道',terrain:'land',base:false,owner:null,links:['K','B','S1']},
- S1:{x:19,y:39,name:'森の祠',terrain:'land',base:true,owner:null,links:['A']},
- B:{x:35,y:65,name:'中央広場',terrain:'land',base:true,owner:null,links:['A','C','P1']},
- C:{x:50,y:66,name:'田んぼ道',terrain:'land',base:false,owner:null,links:['B','D','S2','P2']},
- S2:{x:48,y:87,name:'古い井戸',terrain:'land',base:true,owner:null,links:['C']},
- D:{x:66,y:63,name:'東の岸辺',terrain:'land',base:true,owner:null,links:['C','E','P3']},
- E:{x:81,y:66,name:'東あぜ道',terrain:'land',base:false,owner:null,links:['D','Z']},
-
- // 水中ルート
- WK:{x:20,y:84,name:'西水路',terrain:'water',base:false,owner:null,links:['K','P1']},
- P1:{x:34,y:40,name:'西の池',terrain:'water',base:true,owner:null,links:['WK','P2','B']},
- P2:{x:51,y:32,name:'大きな池',terrain:'water',base:true,owner:null,links:['P1','P3','C']},
- P3:{x:69,y:37,name:'深み',terrain:'water',base:false,owner:null,links:['P2','WZ','D']},
- WZ:{x:83,y:31,name:'東水路',terrain:'water',base:false,owner:null,links:['P3','Z']},
-
- Z:{x:92,y:66,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['E','WZ']}
+const MAP_DEFS={
+ map1:{
+  name:'田園の争奪戦',
+  nodes:{
+   K:{x:8,y:70,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','WK']},
+   A:{x:21,y:65,name:'西あぜ道',terrain:'land',base:false,owner:null,links:['K','B','S1']},
+   S1:{x:19,y:39,name:'森の祠',terrain:'land',base:true,owner:null,links:['A']},
+   B:{x:35,y:65,name:'中央広場',terrain:'land',base:true,owner:null,links:['A','C','P1']},
+   C:{x:50,y:66,name:'田んぼ道',terrain:'land',base:false,owner:null,links:['B','D','S2','P2']},
+   S2:{x:48,y:87,name:'古い井戸',terrain:'land',base:true,owner:null,links:['C']},
+   D:{x:66,y:63,name:'東の岸辺',terrain:'land',base:true,owner:null,links:['C','E','P3']},
+   E:{x:81,y:66,name:'東あぜ道',terrain:'land',base:false,owner:null,links:['D','Z']},
+   WK:{x:20,y:84,name:'西水路',terrain:'water',base:false,owner:null,links:['K','P1']},
+   P1:{x:34,y:40,name:'西の池',terrain:'water',base:true,owner:null,links:['WK','P2','B']},
+   P2:{x:51,y:32,name:'大きな池',terrain:'water',base:true,owner:null,links:['P1','P3','C']},
+   P3:{x:69,y:37,name:'深み',terrain:'water',base:false,owner:null,links:['P2','WZ','D']},
+   WZ:{x:83,y:31,name:'東水路',terrain:'water',base:false,owner:null,links:['P3','Z']},
+   Z:{x:92,y:66,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['E','WZ']}
+  }
+ },
+ map2:{
+  name:'三つ池の攻防',
+  nodes:{
+   K:{x:8,y:68,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','W1']},
+   A:{x:22,y:65,name:'西草地',terrain:'land',base:false,owner:null,links:['K','B','P1']},
+   B:{x:39,y:72,name:'畑の広場',terrain:'land',base:true,owner:null,links:['A','C','P2','S1']},
+   S1:{x:35,y:90,name:'石の祠',terrain:'land',base:true,owner:null,links:['B']},
+   C:{x:57,y:68,name:'土手道',terrain:'land',base:false,owner:null,links:['B','D','P2']},
+   D:{x:75,y:65,name:'東草地',terrain:'land',base:true,owner:null,links:['C','Z','P3']},
+   W1:{x:18,y:35,name:'西水路',terrain:'water',base:false,owner:null,links:['K','P1']},
+   P1:{x:35,y:31,name:'蓮の池',terrain:'water',base:true,owner:null,links:['W1','P2','A']},
+   P2:{x:54,y:34,name:'中央池',terrain:'water',base:true,owner:null,links:['P1','P3','B','C']},
+   P3:{x:73,y:31,name:'葦の池',terrain:'water',base:true,owner:null,links:['P2','W2','D']},
+   W2:{x:86,y:36,name:'東水路',terrain:'water',base:false,owner:null,links:['P3','Z']},
+   Z:{x:92,y:68,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['D','W2']}
+  }
+ },
+ map3:{
+  name:'湿地の包囲網',
+  nodes:{
+   K:{x:8,y:70,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','W1']},
+   A:{x:22,y:70,name:'西土手',terrain:'land',base:false,owner:null,links:['K','B','S1']},
+   S1:{x:19,y:45,name:'木陰の祠',terrain:'land',base:true,owner:null,links:['A','P1']},
+   B:{x:39,y:62,name:'分岐広場',terrain:'land',base:true,owner:null,links:['A','C','P1','P2']},
+   C:{x:58,y:70,name:'湿地道',terrain:'land',base:false,owner:null,links:['B','D','P2']},
+   D:{x:76,y:69,name:'東土手',terrain:'land',base:true,owner:null,links:['C','Z','P3']},
+   W1:{x:20,y:88,name:'低水路',terrain:'water',base:false,owner:null,links:['K','P1']},
+   P1:{x:36,y:34,name:'西沼',terrain:'water',base:true,owner:null,links:['W1','P2','B','S1']},
+   P2:{x:57,y:36,name:'中央沼',terrain:'water',base:false,owner:null,links:['P1','P3','B','C']},
+   P3:{x:76,y:35,name:'東沼',terrain:'water',base:true,owner:null,links:['P2','W2','D']},
+   W2:{x:87,y:43,name:'東水路',terrain:'water',base:false,owner:null,links:['P3','Z']},
+   Z:{x:92,y:70,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['D','W2']}
+  }
+ }
 };
+function cloneNodes(key){
+  return JSON.parse(JSON.stringify(MAP_DEFS[key].nodes));
+}
+let nodes=cloneNodes(selectedMap);
+
+document.querySelectorAll('[data-map]').forEach(btn=>{
+  btn.onclick=()=>{
+    selectedMap=btn.dataset.map;
+    nodes=cloneNodes(selectedMap);
+    sessionStorage.removeItem('mixStrategyState');
+    sessionStorage.removeItem('mixBattleResult');
+    turn=1;side='kawazu';selected=null;cpuBusy=false;
+    makeUnits();
+    mapSelectOverlay.hidden=true;
+    mixTitle.hidden=true;
+    mixMain.hidden=false;
+    renderRoads();
+    saveStrategy();
+    render();
+    const def=MAP_DEFS[selectedMap];
+    say(def.name,'ベルゼブブ軍の出撃メンバーは毎回ランダムです。');
+  };
+});
+
 
 const roster={
  kawazu:[
   ['カワズ','🐸','both','kawazu'],['ミカエル','🐸','both','green'],['ガブリエル','🐸','both','blue'],
-  ['ラファエル','🐸','both','yellow'],['ウリエル','🐸','both','orange']
- ],
- beel:[
-  ['ベルゼブブ','🐸','both','beelzebub'],['ルシファー','🐸','both','black'],['リリス','🐸','both','purple'],
-  ['リヴァイア','🐟','water','piranha'],['アスモデウス','🦞','water','crayfish']
+  ['ラファエル','🐸','both','yellow'],['ウリエル','🐸','both','orange'],['パスカル','🐸','both','pascal']
  ]
 };
-const reserveBeel=[
+const beelLeader=['ベルゼブブ','🐸','both','beelzebub'];
+const beelPool=[
+ ['ルシファー','🐸','both','black'],
+ ['リリス','🐸','both','purple'],
+ ['リヴァイア','🐟','water','piranha'],
+ ['アスモデウス','🦞','water','crayfish'],
  ['アザゼル','🪰','land','piranha'],
- ['ベリアル','🕷️','land','crayfish']
+ ['ベリアル','🕷️','land','crayfish'],
+ ['マルファス','🐸','both','malphas']
 ];
+
+function randomBeelTeam(){
+  const malphas=beelPool.find(r=>r[0]==='マルファス');
+  const pool=beelPool.filter(r=>r[0]!=='マルファス');
+  for(let i=pool.length-1;i>0;i--){
+    const k=Math.floor(Math.random()*(i+1));
+    [pool[i],pool[k]]=[pool[k],pool[i]];
+  }
+  return [beelLeader,malphas,...pool.slice(0,3)];
+}
 
 let turn=1, side='kawazu', selected=null, cpuBusy=false, units=[];
 
+function deploymentNodes(side,team){
+  const home=side==='kawazu'?'K':'Z';
+  // 総大将以外は本拠地の外から開始。
+  // 地形専門キャラは入れる地形を優先し、同じ初期地点に偏りすぎないよう分散。
+  const candidates=Object.keys(nodes).filter(id=>id!==home && nodes[home].links.includes(id));
+  const used={};
+  return team.map((r,i)=>{
+    if(i===0)return home;
+    const mobility=r[2];
+    let opts=candidates.filter(id=>mobility==='both'||nodes[id].terrain===mobility||nodes[id].terrain==='both');
+    if(!opts.length)opts=candidates;
+    opts.sort((a,b)=>(used[a]||0)-(used[b]||0));
+    const pick=opts[0]||home;
+    used[pick]=(used[pick]||0)+1;
+    return pick;
+  });
+}
+
 function freshUnits(){
+ const enemyTeam=randomBeelTeam();
  return [
-  ...roster.kawazu.map((r,i)=>({id:'k'+i,side:'kawazu',name:r[0],icon:r[1],mobility:r[2],type:r[3],node:'K',hp:100,wait:0,moved:false,leader:i===0,defeats:0})),
-  ...roster.beel.map((r,i)=>({id:'b'+i,side:'beel',name:r[0],icon:r[1],mobility:r[2],type:r[3],node:'Z',hp:100,wait:0,moved:false,leader:i===0,defeats:0}))
+  ...roster.kawazu.map((r,i)=>({id:'k'+i,side:'kawazu',name:r[0],icon:r[1],mobility:r[2],type:r[3],node:'K',hp:100,wait:0,moved:false,leader:i===0,defeats:0,engineer:r[0]==='パスカル'})),
+  ...enemyTeam.map((r,i)=>({id:'b'+i,side:'beel',name:r[0],icon:r[1],mobility:r[2],type:r[3],node:'Z',hp:100,wait:0,moved:false,leader:i===0,defeats:0,engineer:r[0]==='マルファス'}))
  ];
 }
 function makeUnits(){ units=freshUnits(); }
 
 function saveStrategy(){
  const owners={};Object.entries(nodes).forEach(([id,n])=>owners[id]=n.owner);
- sessionStorage.setItem('mixStrategyState',JSON.stringify({turn,side,units,owners}));
+ sessionStorage.setItem('mixStrategyState',JSON.stringify({turn,side,units,owners,selectedMap,traps}));
 }
 function restoreStrategy(){
  try{
   const s=JSON.parse(sessionStorage.getItem('mixStrategyState')||'null');
   if(!s||!Array.isArray(s.units))return false;
-  turn=s.turn||1;side=s.side||'kawazu';units=s.units;
+  selectedMap=s.selectedMap||'map1';
+  nodes=cloneNodes(selectedMap);
+  turn=s.turn||1;side=s.side||'kawazu';units=s.units;traps=s.traps||{kawazu:{damage:null,stop:null},beel:{damage:null,stop:null}};
   units.forEach(u=>{
     if(typeof u.defeats!=='number')u.defeats=0;
     if(u.id==='k0'||u.id==='b0')u.leader=true;
+    if(u.name==='パスカル'||u.name==='マルファス')u.engineer=true;
   });
   if(s.owners)Object.entries(s.owners).forEach(([id,o])=>{if(nodes[id])nodes[id].owner=o});
   return true;
@@ -138,9 +235,11 @@ function applyBattleResult(){
 
   // 通常キャラ：倒されるたびに復活待ちが 2→3→4… と増える。
   loser.defeats=(loser.defeats||0)+1;
-  loser.node=loser.side==='kawazu'?'K':'Z';
+  const home=loser.side==='kawazu'?'K':'Z';
+  loser.node=home;
   loser.hp=0;
-  loser.wait=1+loser.defeats;
+  // 工作兵は何度倒されても常に1ターン。通常キャラは従来どおり加算。
+  loser.wait=loser.engineer?1:(1+loser.defeats);
   loser.moved=true;
   side=result.returnSide||'kawazu';
   saveStrategy();
@@ -188,6 +287,14 @@ function updateTurnButton(){
 function render(){
  board.querySelectorAll('.node,.unit').forEach(e=>e.remove());
  document.querySelectorAll('.road').forEach(e=>e.classList.remove('active'));
+ Object.entries(traps).forEach(([trapSide,t])=>{
+  [['damage','💥'],['stop','🕸️']].forEach(([kind,icon])=>{
+   const nid=t[kind];if(!nid||!nodes[nid])return;
+   const mark=document.createElement('span');mark.className='trap-mark '+trapSide;
+   mark.textContent=icon;mark.style.left=nodes[nid].x+'%';mark.style.top=`calc(${nodes[nid].y}% + 28px)`;
+   board.appendChild(mark);
+  });
+ });
  Object.entries(nodes).forEach(([id,n])=>{
   const b=document.createElement('button');b.className='node '+n.terrain+(n.base?' base':'')+(n.owner?' '+n.owner+'-owned':'');
   b.style.left=n.x+'%';b.style.top=n.y+'%';b.dataset.node=id;
@@ -226,7 +333,11 @@ function selectUnit(u){
  if(u.leader){say(u.name,'総大将は本拠地を守るため移動できません。');return}
  if(u.wait){say(u.name,'本拠地で回復待ち：あと'+u.wait+'ターン');return}
  if(u.moved){say(u.name,'このターンは移動済みです。');return}
- selected=u;say(u.name,'移動先を選択。');render();
+ selected=u;
+ if(u.engineer){
+   say(u.name,'移動先を選択。　<button class="trap-action" onclick="placeTrap(selected,\'damage\')">💥罠</button> <button class="trap-action" onclick="placeTrap(selected,\'stop\')">🕸️罠</button>');
+ }else say(u.name,'移動先を選択。');
+ render();
 }
 function cpuChooseHqTerrain(attacker,defender){
   // 防衛側ベルゼブブ軍の選択。
@@ -275,6 +386,53 @@ function chooseHqTerrain(attacker,defender,to,done){
   setTimeout(()=>done(terrain),650);
 }
 
+function protectLeaderAtHq(to,enemies){
+  if(to!=='K'&&to!=='Z')return enemies;
+  const guards=enemies.filter(e=>!e.leader);
+  return guards.length?guards:enemies;
+}
+function chooseDefenderForHuman(attacker,to,enemies,done){
+  enemies=protectLeaderAtHq(to,enemies);
+  if(enemies.length<=1){done(enemies[0]);return;}
+  defenderSelectText.textContent=attacker.name+'が攻撃！　対戦相手を選んでください。';
+  defenderChoices.innerHTML='';
+  enemies.forEach(enemy=>{
+    const btn=document.createElement('button');
+    btn.className='defender-choice';
+    btn.innerHTML='<strong>'+(enemy.leader?'👑 ':'')+enemy.name+'</strong>'+
+      '<small>HP '+Math.round(enemy.hp)+' / '+(enemy.mobility==='water'?'水専門':enemy.mobility==='land'?'陸専門':'水陸両用')+'</small>'+
+      '<span class="mini-hp"><i style="width:'+enemy.hp+'%"></i></span>';
+    btn.onclick=()=>{
+      defenderSelectOverlay.hidden=true;
+      done(enemy);
+    };
+    defenderChoices.appendChild(btn);
+  });
+  defenderSelectCancel.hidden=false;
+  defenderSelectCancel.onclick=()=>{
+    defenderSelectOverlay.hidden=true;
+    // 移動自体を取り消して元の地点へ戻す。
+    if(attacker._moveFrom){
+      attacker.node=attacker._moveFrom;
+      attacker.moved=false;
+      delete attacker._moveFrom;
+    }
+    render();
+    saveStrategy();
+    say(attacker.name,'攻撃を取りやめました。');
+  };
+  defenderSelectOverlay.hidden=false;
+}
+
+function chooseDefenderForCpu(enemies,to){
+  enemies=protectLeaderAtHq(to,enemies);
+  if(!enemies.length)return null;
+  // 総大将が同じ地点にいれば最優先、それ以外はHPの低い相手を狙う。
+  const leader=enemies.find(e=>e.leader);
+  if(leader)return leader;
+  return [...enemies].sort((a,b)=>a.hp-b.hp)[0];
+}
+
 function encounter(attacker,defender,to){
  const n=nodes[to];
  chooseHqTerrain(attacker,defender,to,(terrain)=>{
@@ -299,10 +457,49 @@ function showRotateThenBattle(terrain,a,b,n){
  const timer=setInterval(()=>{if(ready()){clearInterval(timer);setTimeout(go,300)}},250);
  setTimeout(()=>clearInterval(timer),12000);
 }
+function triggerTrap(u,to){
+ const enemySide=u.side==='kawazu'?'beel':'kawazu';
+ const t=traps[enemySide];
+ if(t.damage===to){
+   u.hp=Math.max(1,u.hp-18);
+   t.damage=null;
+   say('ダメージ罠！',u.name+'のHPが18減少。');
+ }
+ if(t.stop===to){
+   t.stop=null;
+   u.moved=true;
+   say('足止め罠！',u.name+'はこの地点で移動終了。');
+ }
+}
+function placeTrap(u,kind){
+ if(!u||!u.engineer||u.wait)return;
+ traps[u.side][kind]=u.node;
+ saveStrategy();render();
+ say(u.name,kind==='damage'?'💥 ダメージ罠を設置しました。':'🕸️ 足止め罠を設置しました。');
+}
 function moveHuman(to){
- if(!selected)return;const u=selected;u.node=to;u.moved=true;const n=nodes[to];if(!n.base)n.owner='kawazu';
- const enemy=units.find(x=>x.node===to&&x.side==='beel'&&!x.wait);selected=null;render();
- if(enemy)encounter(u,enemy,to);else{saveStrategy();say(u.name,n.name+'へ移動しました。')}
+ if(!selected)return;
+ const u=selected;
+ const from=u.node;
+ u._moveFrom=from;
+ u.node=to;
+ u.moved=true;
+ triggerTrap(u,to);
+ const n=nodes[to];
+ if(!n.base)n.owner='kawazu';
+ const enemies=units.filter(x=>x.node===to&&x.side==='beel'&&!x.wait);
+ selected=null;
+ render();
+ if(enemies.length){
+   chooseDefenderForHuman(u,to,enemies,(enemy)=>{
+     delete u._moveFrom;
+     encounter(u,enemy,to);
+   });
+ }else{
+   delete u._moveFrom;
+   saveStrategy();
+   say(u.name,n.name+'へ移動しました。');
+ }
 }
 function distanceToTarget(start,target){
  const q=[[start,0]],seen=new Set([start]);while(q.length){const[id,d]=q.shift();if(id===target)return d;for(const n of nodes[id].links)if(!seen.has(n)){seen.add(n);q.push([n,d+1])}}return 99;
@@ -322,9 +519,16 @@ async function runCpuTurn(){
  const actors=units.filter(u=>u.side==='beel'&&!u.wait&&!u.moved&&!u.leader);
  for(const u of actors){
   if(side!=='beel')break;await new Promise(r=>setTimeout(r,380));
+  if(u.engineer){
+    if(!traps.beel.damage)traps.beel.damage=u.node;
+    else if(!traps.beel.stop)traps.beel.stop=u.node;
+    else if(Math.random()<.45)traps.beel[Math.random()<.5?'damage':'stop']=u.node;
+    saveStrategy();render();
+  }
   const to=chooseCpuMove(u);if(!to){u.moved=true;continue}
-  u.node=to;u.moved=true;const n=nodes[to];if(!n.base)n.owner='beel';render();
-  const enemy=units.find(x=>x.side==='kawazu'&&!x.wait&&x.node===to);
+  u.node=to;u.moved=true;triggerTrap(u,to);const n=nodes[to];if(!n.base)n.owner='beel';render();
+  const enemies=units.filter(x=>x.side==='kawazu'&&!x.wait&&x.node===to);
+  const enemy=chooseDefenderForCpu(enemies,to);
   if(enemy){cpuBusy=false;saveStrategy();encounter(u,enemy,to);return}
   say(u.name,n.name+'へ進軍。');
  }
@@ -332,7 +536,7 @@ async function runCpuTurn(){
 }
 function healSide(which){
  units.filter(u=>u.side===which).forEach(u=>{
-  if(u.wait>0){u.wait--;if(u.wait===0)u.hp=55;return}
+  if(u.wait>0){u.wait--;if(u.wait===0)u.hp=100;return}
   const n=nodes[u.node];if(n.owner===which&&n.base)u.hp=Math.min(100,u.hp+18);
  });
 }
@@ -349,11 +553,11 @@ document.getElementById('endTurn').onclick=()=>{
  if(side==='beel'&&!cpuBusy){runCpuTurn();return;}
  endHumanTurn();
 };
-document.getElementById('resetGame').onclick=()=>{if(confirm('最初からやり直しますか？')){sessionStorage.removeItem('mixStrategyState');sessionStorage.removeItem('mixBattleResult');Object.values(nodes).forEach(n=>{n.owner=n.base?(n===nodes.K?'kawazu':n===nodes.Z?'beel':null):null});makeUnits();turn=1;side='kawazu';selected=null;cpuBusy=false;saveStrategy();render();say('カワズ軍のターン','駒をタップすると進める道が光ります。')}};
+document.getElementById('resetGame').onclick=()=>{if(confirm('最初からやり直しますか？')){sessionStorage.removeItem('mixStrategyState');sessionStorage.removeItem('mixBattleResult');Object.values(nodes).forEach(n=>{n.owner=n.base?(n===nodes.K?'kawazu':n===nodes.Z?'beel':null):null});makeUnits();traps={kawazu:{damage:null,stop:null},beel:{damage:null,stop:null}};turn=1;side='kawazu';selected=null;cpuBusy=false;saveStrategy();render();say('カワズ軍のターン','駒をタップすると進める道が光ります。')}};
 
-renderRoads();
 const resumedStrategy=restoreStrategy();
 if(!resumedStrategy)makeUnits();
+renderRoads();
 const hadResult=applyBattleResult();
 
 // 戦闘から戻った場合はタイトルを挟まず、そのまま戦略マップへ復帰。

@@ -15,7 +15,7 @@
     <span class="tf beel">🐸</span>
   </div>
   <h1>カエルファイターMIX</h1>
-  <p class="title-copy">カエルたちの熱き縄張り争いが、いま始まる！</p>
+  <p class="title-copy">カエルたちの熱き縄張り争いが、いま始まる！</p><p class="landscape-recommend">📱 スマホ横持ち推奨</p>
   <div class="difficulty-title">
     <b>難易度を選択</b>
     <div class="difficulty-buttons">
@@ -25,7 +25,7 @@
     </div>
     <small>難易度はアクションバトルのCPUにも反映されます。</small>
   </div>
-  <button id="mixStartButton" class="mix-start-button">縄張り争いを始める</button>
+  <button id="mixStartButton" class="mix-start-button">スタート</button>
   <div class="title-version">MIX v0.14　水中 v6.49　地上 Jump MIX横 v2.6</div>
 </section>
 
@@ -58,11 +58,11 @@
 
 <section class="rules">
   <b>基本ルール</b>
-  <span>道は陸地主ルートと水中ルートを基本に、要所だけ相互接続。交差しすぎない構成に整理しました。</span>
-  <span>カワズさんとベルゼブブさんは本拠地固定の総大将。相手総大将を倒せば勝利です。</span>
-  <span>本拠地の総大将戦のみ、防衛側が地上戦 / 水中戦を選択できます。</span>
-  <span>CPUが仕掛けた戦闘後はタイトルへ戻らず戦略マップへ復帰し、「次へ」でCPUの残り行動を続けます。</span>
-  <span>地上戦はジャンプを低くし、重力を少し弱めて空中にいる時間を長めに調整しています。</span>
+  <span>本拠地に護衛がいる間は総大将を攻撃できません。護衛をすべて倒すと総大将戦になります。</span>
+  <span>工作兵パスカル / マルファスは小柄で戦闘力が低い代わりに、何度倒されても1ターンでHP満タン復活。</span>
+  <span>工作兵は💥ダメージ罠と🕸️足止め罠をそれぞれ1個だけ設置できます。同種を置き直すと古い罠は移動します。</span>
+  <span>ダメージ罠はHP-18、足止め罠は踏んだ地点でそのターンの移動を終了します。</span>
+  <span>総大将を倒した時点で勝敗決定。本拠地総大将戦では防衛側が地上戦 / 水中戦を選択できます。</span>
 </section>
 </main>
 <script src="mix.js" defer></script>
@@ -86,6 +86,27 @@
       <button id="hqWaterChoice">💧 水中戦</button>
     </div>
     <small>本拠地での総大将戦のみ、防衛側が戦場を選べます。</small>
+  </div>
+</div>
+
+<div id="mapSelectOverlay" class="map-select-overlay" hidden>
+  <div class="map-select-card">
+    <h2>戦場を選択</h2>
+    <p>マップによって陸地と水路のつながり方が変わります。</p>
+    <div class="map-select-buttons">
+      <button data-map="map1"><b>田園の争奪戦</b><small>陸地主体の基本マップ</small></button>
+      <button data-map="map2"><b>三つ池の攻防</b><small>水路への出入りが多い</small></button>
+      <button data-map="map3"><b>湿地の包囲網</b><small>中央でルートが分岐</small></button>
+    </div>
+  </div>
+</div>
+
+<div id="defenderSelectOverlay" class="defender-select-overlay" hidden>
+  <div class="defender-select-card">
+    <h2>対戦相手を選択</h2>
+    <p id="defenderSelectText">同じ地点に複数の敵がいます。</p>
+    <div id="defenderChoices" class="defender-choices"></div>
+    <button id="defenderSelectCancel" class="defender-cancel">やめる</button>
   </div>
 </div>
 </body>
