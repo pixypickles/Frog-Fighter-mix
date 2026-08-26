@@ -319,7 +319,7 @@
     blue:[
       'アクアトルネード：ガード → パンチ',
       'アクアストリーム：ガード → キック',
-      'アクアボルテックス：前 ＋ パンチ'
+      'アクアボルテックス：後ろ ＋ パンチ'
     ],
     black:[
       'ヘルクラッシュ：→ → ＋ パンチ',
@@ -1113,11 +1113,12 @@
             // 突進開始後、赤い足が消える直前まで有効。
             const active = this.specialT<=.475 && this.specialT>=.06;
             if(active){
-              const fx=this.x + this.face*61;
-              const fy=this.y + 39;
+              const fx=this.x + this.face*63;
+              const fy=this.y + 25;
               const hitDist=Math.hypot(other.x-fx, other.y-fy);
 
-              if(hitDist < other.radius + 31){
+              // 足先を上げた分、上方向にも少し広い判定。
+              if(hitDist < other.radius + 37){
                 this.specialHitDone=true;
                 damageHit(this,other,10.0*this.damageMul,240*this.face,-35);
               }
@@ -1759,12 +1760,13 @@
         ctx.lineCap='round';
         ctx.beginPath();
         ctx.moveTo(14,46);
-        ctx.lineTo(67,39);
+        // v0.30: 蹴り足を少し斜め上へ伸ばす。
+        ctx.lineTo(67,25);
         ctx.stroke();
         ctx.restore();
 
         if(this.specialT<=.475 && this.specialT>=.06){
-          drawBurningAura(61,39,25,13,-.12);
+          drawBurningAura(62,25,27,14,-.28);
         }
       }
 
@@ -2639,7 +2641,7 @@
   function practiceSpecialText(type){
     const map={
       green:['↑ ＋ パンチ：バーニングアッパー','前 ＋ キック：バーニングキック','下 → 後ろ ＋ キック：バーニングサイクロン','下 → 後ろ ＋ ガード：レッドオーラ（少量回復＋次の攻撃強化）'],
-      blue:['ガード → パンチ：アクアトルネード（約15°上）','ガード → キック：アクアストリーム（約8°下）','前 ＋ パンチ：アクアボルテックス（HP少量吸収）'],
+      blue:['ガード → パンチ：アクアトルネード（約15°上）','ガード → キック：アクアストリーム（約8°下）','後ろ ＋ パンチ：アクアボルテックス（HP少量吸収）'],
       yellow:['ガード → パンチ：エアカッター','ガード → キック：エアカッター','ガード ×2：ヒーリングバブル','↑ ＋ ガード：エアブースト','↑ ＋ パンチ：ウィンドライズ'],
       orange:['ガード ×2：ホワイトカウンター','後ろ → 前 ＋ ガード：ガーディアンタックル','ガード長押し → 離す：ホワイトオーラ','ホワイトオーラ中：HPが少しずつ回復＋白いリーチ攻撃']
     };
@@ -2833,7 +2835,7 @@
     if(f.type==='green' && f.specialType==='uppercut' && f.specialT<=.54 && f.specialT>=.08)
       z.push({owner:f,x:fx(48),y:f.y-22,r:30});
     if(f.type==='green' && f.specialType==='dropkick' && f.specialT<=.475 && f.specialT>=.06)
-      z.push({owner:f,x:fx(61),y:f.y+39,r:34});
+      z.push({owner:f,x:fx(63),y:f.y+25,r:39});
     if(f.type==='green' && f.specialType==='burningCyclone'){
       const ang=burningCycloneAngle(f);
       const a=rotatePoint(-17,52,ang);
@@ -3275,7 +3277,8 @@
     setTimeout(()=>{
       if(!f || gameOver) return;
       f.vx += f.face*470;
-      f.vy *= .25;
+      // v0.30: 少しだけ上へ浮く初速。地上の重力で緩い放物線になる。
+      f.vy=Math.min(f.vy,-145);
 
       comboEl.textContent='バーニングキック!';
       setTimeout(()=>{
@@ -3959,7 +3962,7 @@
       }
     }
 
-    // ガブリエル：ガード→パンチ＝上水流、ガード→キック＝下水流、前＋パンチ＝ボルテックス。
+    // ガブリエル：ガード→パンチ＝上水流、ガード→キック＝下水流、後ろ＋パンチ＝ボルテックス。
     if(f.type==='blue'){
       const justGuarded=performance.now()-(input.lastSimpleGuardTapTime||0)<=650;
       if(kind==='punch' && justGuarded){
@@ -3968,7 +3971,7 @@
       if(kind==='kick' && justGuarded){
         input.lastSimpleGuardTapTime=0; clearCommand(); return specialAquaStream(f);
       }
-      if(kind==='punch' && hasCommand([forward],520)){
+      if(kind==='punch' && hasCommand([back],520)){
         clearCommand(); return specialAquaVortex(f);
       }
     }

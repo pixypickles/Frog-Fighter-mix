@@ -1856,3 +1856,27 @@ body.mix-ground-landscape .kick{right:0% !important;bottom:27% !important}
 body.mix-ground-landscape .tongue{right:43% !important;bottom:27% !important}
 body.mix-ground-landscape .guard{right:20% !important;bottom:55% !important}
 body.mix-ground-landscape .practice-help{width:min(560px,58vw) !important;top:12% !important}
+
+/* v0.29: 地上横画面、とくに練習モードで4ボタンを水中寄りに分離 */
+body.mix-ground-landscape .buttons{
+  right:1.2vw !important;
+  bottom:1.5vh !important;
+  width:min(49vw,470px) !important;
+  height:min(68vh,310px) !important;
+}
+body.mix-ground-landscape .action{
+  width:76px !important;
+  height:76px !important;
+}
+body.mix-ground-landscape .punch{right:21% !important;bottom:0% !important}
+body.mix-ground-landscape .kick{right:0% !important;bottom:30% !important}
+body.mix-ground-landscape .tongue{right:49% !important;bottom:30% !important}
+body.mix-ground-landscape .guard{right:23% !important;bottom:63% !important}
+
+/* 技一覧が操作領域へ被りすぎないよう、練習時は少し上・左寄せ */
+body.mix-ground-landscape .practice-help{
+  width:min(540px,54vw) !important;
+  top:11% !important;
+  left:50% !important;
+  transform:translateX(-50%) !important;
+}

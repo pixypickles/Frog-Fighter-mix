@@ -1070,11 +1070,12 @@
             // 突進開始後、赤い足が消える直前まで有効。
             const active = this.specialT<=.475 && this.specialT>=.06;
             if(active){
-              const fx=this.x + this.face*61;
-              const fy=this.y + 39;
+              const fx=this.x + this.face*63;
+              const fy=this.y + 25;
               const hitDist=Math.hypot(other.x-fx, other.y-fy);
 
-              if(hitDist < other.radius + 31){
+              // 足先を上げた分、上方向にも少し広い判定。
+              if(hitDist < other.radius + 37){
                 this.specialHitDone=true;
                 damageHit(this,other,10.0*this.damageMul,240*this.face,-35);
               }
@@ -1748,12 +1749,13 @@
         ctx.lineCap='round';
         ctx.beginPath();
         ctx.moveTo(14,46);
-        ctx.lineTo(67,39);
+        // v0.30: 蹴り足を少し斜め上へ伸ばす。
+        ctx.lineTo(67,25);
         ctx.stroke();
         ctx.restore();
 
         if(this.specialT<=.475 && this.specialT>=.06){
-          drawBurningAura(61,39,25,13,-.12);
+          drawBurningAura(62,25,27,14,-.28);
         }
       }
 
@@ -2810,7 +2812,7 @@
     if(f.type==='green' && f.specialType==='uppercut' && f.specialT<=.54 && f.specialT>=.08)
       z.push({owner:f,x:fx(48),y:f.y-22,r:30});
     if(f.type==='green' && f.specialType==='dropkick' && f.specialT<=.475 && f.specialT>=.06)
-      z.push({owner:f,x:fx(61),y:f.y+39,r:34});
+      z.push({owner:f,x:fx(63),y:f.y+25,r:39});
     if(f.type==='green' && f.specialType==='burningCyclone'){
       const ang=burningCycloneAngle(f);
       const a=rotatePoint(-17,52,ang);
@@ -3245,7 +3247,8 @@
     setTimeout(()=>{
       if(!f || gameOver) return;
       f.vx += f.face*470;
-      f.vy *= .25;
+      // 水中でもわずかに上向きへ。地上版より控えめ。
+      f.vy=Math.min(f.vy,-85);
 
       comboEl.textContent='バーニングキック!';
       setTimeout(()=>{
