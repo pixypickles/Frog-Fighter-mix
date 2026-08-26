@@ -10,17 +10,23 @@ const kBases=document.getElementById('kBases'), bBases=document.getElementById('
 
 const nodes={
  K:{x:8,y:70,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','WK']},
- A:{x:22,y:63,name:'西あぜ道',terrain:'land',base:false,owner:null,links:['K','S1','P1']},
- S1:{x:19,y:38,name:'森の祠',terrain:'land',base:true,owner:null,links:['A']},
- WK:{x:22,y:82,name:'本拠地水路',terrain:'water',base:false,owner:null,links:['K','P1']},
- P1:{x:37,y:56,name:'西の池',terrain:'water',base:true,owner:null,links:['A','WK','P2']},
- P2:{x:53,y:43,name:'大きな池',terrain:'water',base:true,owner:null,links:['P1','P3','C']},
- C:{x:52,y:71,name:'田んぼ道',terrain:'land',base:false,owner:null,links:['P2','S2','D']},
- S2:{x:50,y:88,name:'古い井戸',terrain:'land',base:true,owner:null,links:['C']},
- P3:{x:68,y:36,name:'深み',terrain:'water',base:false,owner:null,links:['P2','D','WZ']},
- D:{x:69,y:62,name:'東の岸辺',terrain:'land',base:true,owner:null,links:['C','P3','E']},
- E:{x:82,y:66,name:'東あぜ道',terrain:'land',base:false,owner:null,links:['D','Z']},
- WZ:{x:82,y:29,name:'本拠地水路',terrain:'water',base:false,owner:null,links:['P3','Z']},
+
+ // 陸地主ルート：こちらが最短。地上戦が起こりやすい。
+ A:{x:21,y:65,name:'西あぜ道',terrain:'land',base:false,owner:null,links:['K','B','S1']},
+ S1:{x:19,y:39,name:'森の祠',terrain:'land',base:true,owner:null,links:['A']},
+ B:{x:35,y:65,name:'中央広場',terrain:'land',base:true,owner:null,links:['A','C','P1']},
+ C:{x:50,y:66,name:'田んぼ道',terrain:'land',base:false,owner:null,links:['B','D','S2','P2']},
+ S2:{x:48,y:87,name:'古い井戸',terrain:'land',base:true,owner:null,links:['C']},
+ D:{x:66,y:63,name:'東の岸辺',terrain:'land',base:true,owner:null,links:['C','E','P3']},
+ E:{x:81,y:66,name:'東あぜ道',terrain:'land',base:false,owner:null,links:['D','Z','WZ']},
+
+ // 水中ルート：水専門キャラはこちらを通って本拠地間を移動できる。
+ WK:{x:20,y:84,name:'西水路',terrain:'water',base:false,owner:null,links:['K','P1']},
+ P1:{x:34,y:40,name:'西の池',terrain:'water',base:true,owner:null,links:['WK','P2','B']},
+ P2:{x:51,y:32,name:'大きな池',terrain:'water',base:true,owner:null,links:['P1','P3','C']},
+ P3:{x:69,y:37,name:'深み',terrain:'water',base:false,owner:null,links:['P2','WZ','D']},
+ WZ:{x:83,y:31,name:'東水路',terrain:'water',base:false,owner:null,links:['P3','Z','E']},
+
  Z:{x:92,y:66,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['E','WZ']}
 };
 
@@ -146,7 +152,7 @@ function render(){
   el.title=u.name+(u.wait?'（回復待ち '+u.wait+'）':'');
   if(u.icon==='🐸'){
     el.classList.add('frog-piece','frog-'+u.type);
-    el.innerHTML='<span class="map-frog">🐸</span><span class="hp-mini"><i style="width:'+u.hp+'%"></i></span>';
+    el.innerHTML='<span class="map-frog"><i class="eye e1"></i><i class="eye e2"></i><i class="mouth"></i></span><span class="hp-mini"><i style="width:'+u.hp+'%"></i></span>';
   }else{
     el.innerHTML=u.icon+'<span class="hp-mini"><i style="width:'+u.hp+'%"></i></span>';
   }
