@@ -2683,7 +2683,7 @@
       attackerHp:playerWasAttacker?player.hp:enemy.hp,
       defenderHp:playerWasAttacker?enemy.hp:player.hp,
       winner:attackerWon?'attacker':'defender',
-      returnSide:'kawazu'
+      returnSide:String(mixBattleContext.attacker||'').startsWith('b')?'beel':'kawazu'
     };
     sessionStorage.setItem('mixBattleResult',JSON.stringify(result));
     sessionStorage.removeItem('mixBattle');
@@ -2930,8 +2930,8 @@
     const startX=f.x+dir*35;
     const startY=f.y-6;
     const length=Math.max(innerWidth,innerHeight)*1.05;
-    const dx=dir*.76;
-    const dy=-.65;
+    const dx=dir*.90;
+    const dy=-.42;
 
     aquaTornadoes.push({
       owner:f,
@@ -3154,8 +3154,8 @@
     const startX=f.x+dir*28;
     const startY=f.y+42;
     const length=Math.max(innerWidth,innerHeight)*1.05;
-    const dx=dir*.76;
-    const dy=.65;
+    const dx=dir*.90;
+    const dy=.42;
 
     aquaTornadoes.push({
       owner:f,

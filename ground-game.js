@@ -98,8 +98,8 @@
 
   // Ground prototype physics. Up/down input remains available for command recognition,
   // but movement itself is horizontal + gravity. Landing immediately triggers a frog jump.
-  const LAND_GRAVITY = 1200;
-  const LAND_AUTO_JUMP_SPEED = 640;
+  const LAND_GRAVITY = 820;
+  const LAND_AUTO_JUMP_SPEED = 470;
   const LAND_HORIZONTAL_DRAG = .22;
 
   // Ground prototype 0.4: lower the soil again so the tall sky stays dominant.
@@ -2702,7 +2702,7 @@
       attackerHp:playerWasAttacker?player.hp:enemy.hp,
       defenderHp:playerWasAttacker?enemy.hp:player.hp,
       winner:attackerWon?'attacker':'defender',
-      returnSide:'kawazu'
+      returnSide:String(mixBattleContext.attacker||'').startsWith('b')?'beel':'kawazu'
     };
     sessionStorage.setItem('mixBattleResult',JSON.stringify(result));
     sessionStorage.removeItem('mixBattle');
@@ -2949,8 +2949,8 @@
     const startX=f.x+dir*35;
     const startY=f.y-6;
     const length=Math.max(innerWidth,innerHeight)*1.05;
-    const dx=dir*.76;
-    const dy=-.65;
+    const dx=dir*.90;
+    const dy=-.42;
 
     aquaTornadoes.push({
       owner:f,
@@ -3180,8 +3180,8 @@
     const startX=f.x+dir*28;
     const startY=f.y+42;
     const length=Math.max(innerWidth,innerHeight)*1.05;
-    const dx=dir*.76;
-    const dy=.65;
+    const dx=dir*.90;
+    const dy=.42;
 
     aquaTornadoes.push({
       owner:f,

@@ -40,19 +40,21 @@ document.getElementById('mixResultRestart').onclick=()=>{
 const nodes={
  K:{x:8,y:70,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','WK']},
 
- A:{x:21,y:65,name:'西あぜ道',terrain:'land',base:false,owner:null,links:['K','B','S1','P1']},
- S1:{x:19,y:39,name:'森の祠',terrain:'land',base:true,owner:null,links:['A','P1']},
- B:{x:35,y:65,name:'中央広場',terrain:'land',base:true,owner:null,links:['A','C','P1','P2','WK']},
- C:{x:50,y:66,name:'田んぼ道',terrain:'land',base:false,owner:null,links:['B','D','S2','P1','P2','P3']},
+ // 陸地主ルート
+ A:{x:21,y:65,name:'西あぜ道',terrain:'land',base:false,owner:null,links:['K','B','S1']},
+ S1:{x:19,y:39,name:'森の祠',terrain:'land',base:true,owner:null,links:['A']},
+ B:{x:35,y:65,name:'中央広場',terrain:'land',base:true,owner:null,links:['A','C','P1']},
+ C:{x:50,y:66,name:'田んぼ道',terrain:'land',base:false,owner:null,links:['B','D','S2','P2']},
  S2:{x:48,y:87,name:'古い井戸',terrain:'land',base:true,owner:null,links:['C']},
- D:{x:66,y:63,name:'東の岸辺',terrain:'land',base:true,owner:null,links:['C','E','P2','P3','WZ']},
- E:{x:81,y:66,name:'東あぜ道',terrain:'land',base:false,owner:null,links:['D','Z','WZ','P3']},
+ D:{x:66,y:63,name:'東の岸辺',terrain:'land',base:true,owner:null,links:['C','E','P3']},
+ E:{x:81,y:66,name:'東あぜ道',terrain:'land',base:false,owner:null,links:['D','Z']},
 
- WK:{x:20,y:84,name:'西水路',terrain:'water',base:false,owner:null,links:['K','P1','B']},
- P1:{x:34,y:40,name:'西の池',terrain:'water',base:true,owner:null,links:['WK','P2','A','B','C','S1']},
- P2:{x:51,y:32,name:'大きな池',terrain:'water',base:true,owner:null,links:['P1','P3','B','C','D']},
- P3:{x:69,y:37,name:'深み',terrain:'water',base:false,owner:null,links:['P2','WZ','C','D','E']},
- WZ:{x:83,y:31,name:'東水路',terrain:'water',base:false,owner:null,links:['P3','Z','D','E']},
+ // 水中ルート
+ WK:{x:20,y:84,name:'西水路',terrain:'water',base:false,owner:null,links:['K','P1']},
+ P1:{x:34,y:40,name:'西の池',terrain:'water',base:true,owner:null,links:['WK','P2','B']},
+ P2:{x:51,y:32,name:'大きな池',terrain:'water',base:true,owner:null,links:['P1','P3','C']},
+ P3:{x:69,y:37,name:'深み',terrain:'water',base:false,owner:null,links:['P2','WZ','D']},
+ WZ:{x:83,y:31,name:'東水路',terrain:'water',base:false,owner:null,links:['P3','Z']},
 
  Z:{x:92,y:66,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['E','WZ']}
 };
@@ -350,7 +352,16 @@ document.getElementById('endTurn').onclick=()=>{
 document.getElementById('resetGame').onclick=()=>{if(confirm('最初からやり直しますか？')){sessionStorage.removeItem('mixStrategyState');sessionStorage.removeItem('mixBattleResult');Object.values(nodes).forEach(n=>{n.owner=n.base?(n===nodes.K?'kawazu':n===nodes.Z?'beel':null):null});makeUnits();turn=1;side='kawazu';selected=null;cpuBusy=false;saveStrategy();render();say('カワズ軍のターン','駒をタップすると進める道が光ります。')}};
 
 renderRoads();
-if(!restoreStrategy())makeUnits();
+const resumedStrategy=restoreStrategy();
+if(!resumedStrategy)makeUnits();
 const hadResult=applyBattleResult();
+
+// 戦闘から戻った場合はタイトルを挟まず、そのまま戦略マップへ復帰。
+if(resumedStrategy || hadResult){
+  mixTitle.hidden=true;
+  mixMain.hidden=false;
+}
 render();
-if(!hadResult)say('カワズ軍のターン','総大将を守りながら敵本拠地を目指します。');
+if(!hadResult){
+  say('カワズ軍のターン','総大将を守りながら敵本拠地を目指します。');
+}
