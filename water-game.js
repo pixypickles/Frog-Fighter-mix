@@ -5160,9 +5160,11 @@ function drawBackground(dt){
         const owner=t.owner;
         if(owner){
           const length=Math.max(innerWidth,innerHeight)*1.05;
-          const dx=owner.face*.76;
           const downward=t.direction==='down';
-          const dy=downward?.65:-.65;
+          // 水流は発生後も指定角度を維持する。
+          // 下: 水平より8° / 上: 水平より15°
+          const dx=owner.face*(downward?.990:.966);
+          const dy=downward?.139:-.259;
 
           t.startX=owner.x+owner.face*(t.source==='foot'?28:35);
           t.startY=owner.y+(t.source==='foot'?42:-6);
