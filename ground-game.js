@@ -3542,8 +3542,8 @@
     f.attackT=.42;
 
     const speed=355;
-    // v0.31: キック版は前方水平と約10°下へ飛ぶ2枚。
-    const angles = source==='punch' ? [0,-24] : [0,10];
+    // v0.31: キック版は前方水平と約15°下へ飛ぶ2枚。
+    const angles = source==='punch' ? [0,-24] : [0,15];
     const yOffset=source==='punch' ? -10 : 24;
 
     angles.forEach((deg,i)=>{

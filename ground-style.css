@@ -1896,3 +1896,19 @@ body.mix-ground-landscape .punch{right:22% !important;bottom:0% !important}
 body.mix-ground-landscape .kick{right:0% !important;bottom:31% !important}
 body.mix-ground-landscape .tongue{right:52% !important;bottom:31% !important}
 body.mix-ground-landscape .guard{right:25% !important;bottom:66% !important}
+
+/* v0.32: v0.31より4ボタンを中央寄りへ。重ならず、離れすぎない中間配置 */
+body.mix-ground-landscape .buttons{
+  right:2.0vw !important;
+  bottom:2.5vh !important;
+  width:min(38vw,400px) !important;
+  height:min(58vh,280px) !important;
+}
+body.mix-ground-landscape .action{
+  width:76px !important;
+  height:76px !important;
+}
+body.mix-ground-landscape .punch{right:23% !important;bottom:0% !important}
+body.mix-ground-landscape .kick{right:0% !important;bottom:27% !important}
+body.mix-ground-landscape .tongue{right:49% !important;bottom:27% !important}
+body.mix-ground-landscape .guard{right:24% !important;bottom:56% !important}
