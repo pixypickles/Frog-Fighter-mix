@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#173e35">
+<title>カエルファイターMIX</title>
+<link rel="stylesheet" href="mix.css">
+</head>
+<body>
+<main class="mix">
+<header>
+  <div class="frog">🐸</div>
+  <div><h1>カエルファイターMIX</h1><p>5対5・拠点争奪アクション</p></div>
+  <span class="ver">v0.2</span>
+</header>
+
+<section class="turnbar">
+  <div><b id="turnLabel">TURN 1</b><span id="sideLabel">カワズ軍</span></div>
+  <div class="bases"><span class="kawazu-dot"></span><b id="kBases">1</b>拠点　<span class="beel-dot"></span><b id="bBases">1</b>拠点</div>
+</section>
+
+<section id="board" class="board" aria-label="拠点争奪マップ">
+  <svg id="roads" viewBox="0 0 1000 680" preserveAspectRatio="none" aria-hidden="true"></svg>
+  <div class="water-zone">水域</div>
+  <div class="land-zone">陸地</div>
+</section>
+
+<section class="panel">
+  <div id="message"><b>カワズ軍のターン</b><span>キャラクターを選んで、光っている道の先へ移動。</span></div>
+  <button id="endTurn">ターン終了</button>
+  <button id="resetGame">最初から</button>
+</section>
+
+<section class="rules">
+  <b>基本ルール</b>
+  <span>敵と同じ地点に入るとバトル。水域なら水中戦、陸地なら地上戦。</span>
+  <span>戦闘後もHPを引き継ぎ。途中拠点にいるキャラはターン開始時に回復。</span>
+  <span>敗北したキャラは本拠地へ戻り、待機後に復帰する想定です。</span>
+</section>
+</main>
+<script src="mix.js"></script>
+</body>
+</html>
