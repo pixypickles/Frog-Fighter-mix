@@ -129,7 +129,8 @@ function render(){
   const b=document.createElement('button');b.className='node '+n.terrain+(n.base?' base':'')+(n.owner?' '+n.owner+'-owned':'');
   b.style.left=n.x+'%';b.style.top=n.y+'%';b.dataset.node=id;
   const terrainLabel=n.terrain==='water'?'💧 水中':(n.terrain==='both'?'💧🌱 水陸両用':'🌱 陸地');
-  b.innerHTML='<b>'+n.name+'</b><small>'+terrainLabel+(n.base?'・拠点':'')+'</small>';
+  const healLabel=n.base?' ❤️ 回復':'';
+  b.innerHTML='<b>'+(n.base?'❤️ ':'')+n.name+'</b><small>'+terrainLabel+healLabel+'</small>';
   if(side==='kawazu'&&selected&&nodes[selected.node].links.includes(id)&&canEnter(selected,id)&&!selected.moved&&!selected.wait){
    b.classList.add('reachable');b.onclick=()=>moveHuman(id);
    const line=document.querySelector('[data-road="'+roadKey(selected.node,id)+'"]');if(line)line.classList.add('active');

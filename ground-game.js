@@ -1078,7 +1078,7 @@
 
               if(hitDist < other.radius + 28){
                 this.specialHitDone=true;
-                damageHit(this,other,8.0*this.damageMul,185*this.face,-165);
+                damageHit(this,other,10.5*this.damageMul,245*this.face,-190);
               }
             }
           }else if(this.specialType==='dropkick'){
@@ -3260,8 +3260,8 @@
     // 一瞬しゃがんだ後に、画面上方向へ強く跳ぶ
     setTimeout(()=>{
       if(!f || gameOver) return;
-      f.vy=-430;
-      f.vx+=f.face*245;
+      f.vy=-510;
+      f.vx+=f.face*330;
 
       comboEl.textContent='バーニングアッパー!';
       setTimeout(()=>{

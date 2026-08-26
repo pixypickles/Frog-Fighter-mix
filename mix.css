@@ -19,3 +19,6 @@
 .node.both{
   background:linear-gradient(135deg,#3e6c3d 0 50%,#176f89 50% 100%) !important;
 }
+
+.node.base{border-color:#ffd5df;box-shadow:0 0 0 3px #ff8fab66,0 5px 0 #0004}
+.node.base b{font-size:12px}
