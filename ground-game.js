@@ -102,8 +102,8 @@
 
   // Ground prototype physics. Up/down input remains available for command recognition,
   // but movement itself is horizontal + gravity. Landing immediately triggers a frog jump.
-  const LAND_GRAVITY = 700;
-  const LAND_AUTO_JUMP_SPEED = 400;
+  const LAND_GRAVITY = 650;
+  const LAND_AUTO_JUMP_SPEED = 355;
   const LAND_HORIZONTAL_DRAG = .22;
 
   // Ground prototype 0.4: lower the soil again so the tall sky stays dominant.
