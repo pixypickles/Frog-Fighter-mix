@@ -1840,12 +1840,19 @@ body.mix-ground-landscape .stick-base{
   width:128px !important;
   height:128px !important;
 }
-body.mix-ground-landscape .action{
-  width:76px !important;
-  height:76px !important;
+body.mix-ground-landscape .buttons{
+  right:2vw !important;
+  bottom:1vh !important;
+  width:min(46vw,430px) !important;
+  height:min(62vh,280px) !important;
 }
-body.mix-ground-landscape .punch{right:18% !important;bottom:7% !important}
-body.mix-ground-landscape .kick{right:5% !important;bottom:20% !important}
-body.mix-ground-landscape .tongue{right:34% !important;bottom:21% !important}
-body.mix-ground-landscape .guard{right:18% !important;bottom:34% !important}
+body.mix-ground-landscape .action{
+  width:82px !important;
+  height:82px !important;
+}
+/* 地上戦でも水中戦のように4ボタンの間隔をしっかり確保 */
+body.mix-ground-landscape .punch{right:19% !important;bottom:2% !important}
+body.mix-ground-landscape .kick{right:0% !important;bottom:27% !important}
+body.mix-ground-landscape .tongue{right:43% !important;bottom:27% !important}
+body.mix-ground-landscape .guard{right:20% !important;bottom:55% !important}
 body.mix-ground-landscape .practice-help{width:min(560px,58vw) !important;top:12% !important}
