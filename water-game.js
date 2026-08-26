@@ -306,7 +306,7 @@
     blue:[
       'アクアトルネード：ガード → パンチ',
       'アクアストリーム：ガード → キック',
-      'アクアボルテックス：前 ＋ パンチ'
+      'アクアボルテックス：後ろ ＋ パンチ'
     ],
     black:[
       'ヘルクラッシュ：→ → ＋ パンチ',
@@ -2618,7 +2618,7 @@
   function practiceSpecialText(type){
     const map={
       green:['↑ ＋ パンチ：バーニングアッパー','前 ＋ キック：バーニングキック','下 → 後ろ ＋ キック：バーニングサイクロン','下 → 後ろ ＋ ガード：レッドオーラ（少量回復＋次の攻撃強化）'],
-      blue:['ガード → パンチ：アクアトルネード（約15°上）','ガード → キック：アクアストリーム（約8°下）','前 ＋ パンチ：アクアボルテックス（HP少量吸収）'],
+      blue:['ガード → パンチ：アクアトルネード（約15°上）','ガード → キック：アクアストリーム（約8°下）','後ろ ＋ パンチ：アクアボルテックス（HP少量吸収）'],
       yellow:['ガード → パンチ：水圧カッター','ガード → キック：水圧カッター','ガード ×2：ヒーリングバブル','↑ ＋ ガード：高速バブル移動'],
       orange:['ガード ×2：ホワイトカウンター','後ろ → 前 ＋ ガード：ガーディアンタックル','ガード長押し → 離す：ホワイトオーラ','ホワイトオーラ中：HPが少しずつ回復＋白いリーチ攻撃']
     };
@@ -3849,7 +3849,7 @@
       }
     }
 
-    // ガブリエル：ガード→パンチ＝上水流、ガード→キック＝下水流、前＋パンチ＝ボルテックス。
+    // ガブリエル：ガード→パンチ＝上水流、ガード→キック＝下水流、後ろ＋パンチ＝ボルテックス。
     if(f.type==='blue'){
       const justGuarded=performance.now()-(input.lastSimpleGuardTapTime||0)<=650;
       if(kind==='punch' && justGuarded){
@@ -3858,7 +3858,7 @@
       if(kind==='kick' && justGuarded){
         input.lastSimpleGuardTapTime=0; clearCommand(); return specialAquaStream(f);
       }
-      if(kind==='punch' && hasCommand([forward],520)){
+      if(kind==='punch' && hasCommand([back],520)){
         clearCommand(); return specialAquaVortex(f);
       }
     }

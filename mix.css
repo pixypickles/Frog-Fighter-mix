@@ -347,3 +347,17 @@
 .map-select-buttons button.cleared{
   box-shadow:0 0 0 2px #7af58a88 inset;
 }
+
+/* v0.35: 敵本拠地へ攻め込んでいる駒を埋もれさせない */
+.unit.sieging{
+  box-shadow:0 0 0 4px #fff6a0,0 0 18px #ffd84d,0 5px 10px #0008 !important;
+}
+.unit.sieging:before{
+  content:"⚔";
+  position:absolute;
+  left:-8px;
+  top:-16px;
+  font-size:15px;
+  filter:none;
+}
+.unit.waiting{opacity:.48}

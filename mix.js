@@ -44,8 +44,8 @@ const KAWAZU_TEAM_PRACTICE={
  },
  blue:{
   name:'ガブリエルさん',
-  ground:['ガード → パンチ：アクアトルネード（約15°上）','ガード → キック：アクアストリーム（約8°下）','前 ＋ パンチ：アクアボルテックス（HP少量吸収）'],
-  water:['ガード → パンチ：アクアトルネード（約15°上）','ガード → キック：アクアストリーム（約8°下）','前 ＋ パンチ：アクアボルテックス（HP少量吸収）']
+  ground:['ガード → パンチ：アクアトルネード（約15°上）','ガード → キック：アクアストリーム（約8°下）','後ろ ＋ パンチ：アクアボルテックス（HP少量吸収）'],
+  water:['ガード → パンチ：アクアトルネード（約15°上）','ガード → キック：アクアストリーム（約8°下）','後ろ ＋ パンチ：アクアボルテックス（HP少量吸収）']
  },
  yellow:{
   name:'ラファエルさん',
@@ -315,6 +315,7 @@ function restoreStrategy(){
   turn=s.turn||1;side=s.side||'kawazu';units=s.units;traps=s.traps||{kawazu:{damage:null,stop:null},beel:{damage:null,stop:null}};kawazuBriefed=!!s.kawazuBriefed;
   units.forEach(u=>{
     if(typeof u.defeats!=='number')u.defeats=0;
+    if(typeof u.sieging!=='boolean')u.sieging=false;
     if(u.id==='k0'||u.id==='b0')u.leader=true;
     if(u.name==='パスカル'||u.name==='マルファス')u.engineer=true;
   });
@@ -352,6 +353,14 @@ function applyBattleResult(){
   const battleNode=result.node||winner.node;
   winner.node=battleNode;
   winner.hp=Math.max(1,winner.hp);
+  winner.moved=true;
+
+  // 敵本拠地で護衛に勝った攻撃側は、その場に残って次の護衛/総大将戦へ備える。
+  // 重なった駒の下に隠れて「消えた」ように見えないよう攻城中フラグも付ける。
+  winner.sieging =
+    (battleNode==='Z' && winner.side==='kawazu') ||
+    (battleNode==='K' && winner.side==='beel');
+
   if(nodes[battleNode]&&!nodes[battleNode].base)nodes[battleNode].owner=winner.side;
 
   // 総大将を倒したらその時点で決着。
@@ -366,6 +375,7 @@ function applyBattleResult(){
   loser.defeats=(loser.defeats||0)+1;
   const home=loser.side==='kawazu'?'K':'Z';
   loser.node=home;
+  loser.sieging=false;
   loser.hp=0;
   // 工作兵は何度倒されても常に1ターン。通常キャラは従来どおり加算。
   loser.wait=loser.engineer?1:(1+loser.defeats);
@@ -440,8 +450,11 @@ function render(){
  units.forEach(u=>{
   const n=nodes[u.node],idx=counts[u.node]||0;counts[u.node]=idx+1;
   const [ox,oy]=stackOffset(idx),el=document.createElement('button');
-  el.className='unit '+u.side+(selected===u?' selected':'')+(u.wait?' waiting':'')+(u.leader?' leader':'');
+  el.className='unit '+u.side+(selected===u?' selected':'')+(u.wait?' waiting':'')+(u.leader?' leader':'')+(u.sieging?' sieging':'');
   el.style.left=`calc(${n.x}% + ${ox}px)`;el.style.top=`calc(${n.y}% + ${oy}px)`;
+  if(u.sieging)el.style.zIndex='60';
+  else if(u.wait)el.style.zIndex='12';
+  else el.style.zIndex='24';
   el.title=u.name+(u.wait?'（回復待ち '+u.wait+'）':'');
   if(u.icon==='🐸'){
     el.classList.add('frog-piece','frog-'+u.type);
@@ -618,6 +631,7 @@ function moveHuman(to){
  const from=u.node;
  u._moveFrom=from;
  u.node=to;
+ u.sieging=false;
  u.moved=true;
  triggerTrap(u,to);
  const n=nodes[to];
@@ -661,7 +675,7 @@ async function runCpuTurn(){
     saveStrategy();render();
   }
   const to=chooseCpuMove(u);if(!to){u.moved=true;continue}
-  u.node=to;u.moved=true;triggerTrap(u,to);const n=nodes[to];if(!n.base)n.owner='beel';render();
+  u.node=to;u.sieging=false;u.moved=true;triggerTrap(u,to);const n=nodes[to];if(!n.base)n.owner='beel';render();
   const enemies=units.filter(x=>x.side==='kawazu'&&!x.wait&&x.node===to);
   const enemy=chooseDefenderForCpu(enemies,to);
   if(enemy){cpuBusy=false;saveStrategy();encounter(u,enemy,to);return}
