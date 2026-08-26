@@ -101,6 +101,38 @@ function showKawazuBriefing(done){
 
 let selectedMap='map1';
 
+const MAP_UNLOCK_KEY='kaeru_mix_map_unlock_v1';
+function getUnlockedMapLevel(){
+  try{
+    const v=parseInt(localStorage.getItem(MAP_UNLOCK_KEY)||'1',10);
+    return Math.max(1,Math.min(3,isFinite(v)?v:1));
+  }catch(e){return 1;}
+}
+function setUnlockedMapLevel(level){
+  try{
+    localStorage.setItem(MAP_UNLOCK_KEY,String(Math.max(getUnlockedMapLevel(),level)));
+  }catch(e){}
+}
+function mapLevelForKey(key){
+  return key==='map3'?3:key==='map2'?2:1;
+}
+function refreshMapLocks(){
+  const unlocked=getUnlockedMapLevel();
+  document.querySelectorAll('[data-map]').forEach(btn=>{
+    const lvl=mapLevelForKey(btn.dataset.map);
+    const locked=lvl>unlocked;
+    btn.classList.toggle('locked',locked);
+    btn.disabled=locked;
+    btn.classList.toggle('cleared',lvl<unlocked);
+    const small=btn.querySelector('small');
+    if(!small)return;
+    if(locked)small.textContent='🔒 前のマップをクリアで開放';
+    else if(lvl<unlocked)small.textContent='クリア済み';
+    else if(btn.dataset.map==='map1')small.textContent='最初の戦場・短く単純なルート';
+  });
+}
+
+
 
 let mixDifficulty='normal';
 
@@ -112,6 +144,7 @@ document.querySelectorAll('[data-difficulty]').forEach(btn=>{
 });
 document.getElementById('mixStartButton').onclick=()=>{
   try{localStorage.setItem('kaeru_difficulty',mixDifficulty)}catch(e){}
+  refreshMapLocks();
   mapSelectOverlay.hidden=false;
 };
 document.getElementById('mixResultRestart').onclick=()=>{
@@ -122,22 +155,19 @@ document.getElementById('mixResultRestart').onclick=()=>{
 
 const MAP_DEFS={
  map1:{
-  name:'田園の争奪戦',
+  name:'小さな田んぼ道',
   nodes:{
-   K:{x:8,y:70,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','WK']},
-   A:{x:21,y:65,name:'西あぜ道',terrain:'land',base:false,owner:null,links:['K','B','S1']},
-   S1:{x:19,y:39,name:'森の祠',terrain:'land',base:true,owner:null,links:['A']},
-   B:{x:35,y:65,name:'中央広場',terrain:'land',base:true,owner:null,links:['A','C','P1']},
-   C:{x:50,y:66,name:'田んぼ道',terrain:'land',base:false,owner:null,links:['B','D','S2','P2']},
-   S2:{x:48,y:87,name:'古い井戸',terrain:'land',base:true,owner:null,links:['C']},
-   D:{x:66,y:63,name:'東の岸辺',terrain:'land',base:true,owner:null,links:['C','E','P3']},
-   E:{x:81,y:66,name:'東あぜ道',terrain:'land',base:false,owner:null,links:['D','Z']},
-   WK:{x:20,y:84,name:'西水路',terrain:'water',base:false,owner:null,links:['K','P1']},
-   P1:{x:34,y:40,name:'西の池',terrain:'water',base:true,owner:null,links:['WK','P2','B']},
-   P2:{x:51,y:32,name:'大きな池',terrain:'water',base:true,owner:null,links:['P1','P3','C']},
-   P3:{x:69,y:37,name:'深み',terrain:'water',base:false,owner:null,links:['P2','WZ','D']},
-   WZ:{x:83,y:31,name:'東水路',terrain:'water',base:false,owner:null,links:['P3','Z']},
-   Z:{x:92,y:66,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['E','WZ']}
+   K:{x:9,y:72,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','W1']},
+
+   A:{x:28,y:69,name:'西あぜ道',terrain:'land',base:false,owner:null,links:['K','B']},
+   B:{x:50,y:64,name:'中央広場',terrain:'land',base:true,owner:null,links:['A','C','P1']},
+   C:{x:72,y:62,name:'東あぜ道',terrain:'land',base:false,owner:null,links:['B','W2']},
+
+   W1:{x:28,y:36,name:'西の池',terrain:'water',base:false,owner:null,links:['K','P1']},
+   P1:{x:51,y:34,name:'中央池',terrain:'water',base:true,owner:null,links:['W1','W2','B']},
+   W2:{x:75,y:34,name:'東の水路',terrain:'water',base:false,owner:null,links:['P1','C','Z']},
+
+   Z:{x:91,y:19,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['W2']}
   }
  },
  map2:{
@@ -190,6 +220,8 @@ let nodes=cloneNodes(selectedMap);
 
 document.querySelectorAll('[data-map]').forEach(btn=>{
   btn.onclick=()=>{
+    const targetLevel=mapLevelForKey(btn.dataset.map);
+    if(targetLevel>getUnlockedMapLevel())return;
     selectedMap=btn.dataset.map;
     nodes=cloneNodes(selectedMap);
     sessionStorage.removeItem('mixStrategyState');
@@ -199,7 +231,8 @@ document.querySelectorAll('[data-map]').forEach(btn=>{
     mapSelectOverlay.hidden=true;
     mixTitle.hidden=true;
     mixMain.hidden=false;
-    renderRoads();
+    refreshMapLocks();
+renderRoads();
     saveStrategy();
     render();
     const def=MAP_DEFS[selectedMap];
@@ -291,10 +324,15 @@ function restoreStrategy(){
 }
 function showMixResult(winnerSide,loserLeader){
   const won=winnerSide==='kawazu';
+  if(won){
+    const clearedLevel=mapLevelForKey(selectedMap);
+    if(clearedLevel<3)setUnlockedMapLevel(clearedLevel+1);
+  }
   document.getElementById('mixResultIcon').textContent=won?'🐸':'👑';
   document.getElementById('mixResultTitle').textContent=won?'カワズ軍 勝利！':'ベルゼブブ軍 勝利…';
   document.getElementById('mixResultText').textContent=won
-    ? 'ベルゼブブさんを撃破！\nカワズ軍が池と田んぼの縄張りを守り抜いた。'
+    ? ('ベルゼブブさんを撃破！\nカワズ軍が池と田んぼの縄張りを守り抜いた。'+
+       (mapLevelForKey(selectedMap)<3?'\n\n🔓 次のマップが開放された！':''))
     : 'カワズさんが倒された！\nベルゼブブ軍がカワズ本拠地を制圧した。';
   mixResultOverlay.hidden=false;
   cpuBusy=true;

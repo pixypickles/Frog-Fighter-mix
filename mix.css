@@ -333,3 +333,17 @@
 @media(max-width:520px){
   .mix-practice-fighters{grid-template-columns:repeat(2,1fr)}
 }
+
+.map-select-buttons button.locked{
+  opacity:.42;
+  filter:grayscale(.55);
+  position:relative;
+}
+.map-select-buttons button.locked:after{
+  content:"🔒";
+  position:absolute;right:12px;top:50%;transform:translateY(-50%);
+  font-size:20px;
+}
+.map-select-buttons button.cleared{
+  box-shadow:0 0 0 2px #7af58a88 inset;
+}
