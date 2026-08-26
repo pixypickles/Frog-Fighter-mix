@@ -538,7 +538,8 @@ async function runCpuTurn(){
 function healSide(which){
  units.filter(u=>u.side===which).forEach(u=>{
   if(u.wait>0){u.wait--;if(u.wait===0)u.hp=100;return}
-  const n=nodes[u.node];if(n.owner===which&&n.base)u.hp=Math.min(100,u.hp+18);
+  // 総大将は拠点にいてもHP回復しない。長期戦での全回復ループを防ぐ。
+  const n=nodes[u.node];if(!u.leader&&n.owner===which&&n.base)u.hp=Math.min(100,u.hp+18);
  });
 }
 function beginHumanTurn(){

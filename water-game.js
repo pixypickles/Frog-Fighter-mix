@@ -295,14 +295,14 @@
 
   const selectCardCommands={
     green:[
-      'バーニングアッパー：↓ ↑ ＋ パンチ',
-      'バーニングキック：↓ → ＋ キック',
-      'バーニングサイクロン：時計回り1回転 ＋ キック'
+      'バーニングアッパー：↑ ＋ パンチ',
+      'バーニングキック：前 ＋ キック',
+      'バーニングサイクロン：↓ → 後ろ ＋ キック'
     ],
     blue:[
-      'アクアトルネード：↙ ↗ ＋ パンチ',
-      'アクアストリーム：↖ ↘ ＋ キック',
-      'アクアボルテックス：↓ → ＋ パンチ'
+      'アクアトルネード：後ろ ＋ パンチ',
+      'アクアストリーム：後ろ ＋ キック',
+      'アクアボルテックス：前 ＋ パンチ'
     ],
     black:[
       'ヘルクラッシュ：→ → ＋ パンチ',
@@ -314,14 +314,14 @@
       'バックスピンキック：後ろ ＋ キック（追加入力で追加回転）'
     ],
     yellow:[
-      '水圧カッター：↓ → ＋ パンチ（真横）',
-      '水圧カッター：↓ → ＋ キック（約15°下）',
-      'ヒーリングバブル：後ろ ＋ ガード ×2',
-      '高速バブル移動：反時計回り1回転 ＋ ガード'
+      '水圧カッター：ガード → パンチ',
+      '水圧カッター：ガード → キック',
+      'ヒーリングバブル：ガード ×2',
+      '高速バブル移動：↑ ＋ ガード'
     ],
     orange:[
-      'ホワイトカウンター：方向キー1回転 ＋ ガード',
-      'ガーディアンタックル：← → ＋ ガード',
+      'ホワイトカウンター：ガード ×2',
+      'ガーディアンタックル：後ろ → 前 ＋ ガード',
       'ホワイトオーラ：ガード長押し → 離す',
       '白い長リーチ攻撃：オーラ中 パンチ / キック'
     ],
@@ -341,9 +341,9 @@
       'アビスショック：↓ → ＋ キック'
     ],
     kawazu:[
-      '水圧ラッシュ：↓ → ＋ パンチ',
-      'ミラージュキック：↓ → ＋ キック',
-      'ハイスピードサイクロン：時計回り1回転 ＋ キック'
+      '水圧ラッシュ：パンチ ×2',
+      'ミラージュキック：前 ＋ キック',
+      'ハイスピードサイクロン：↓ → 後ろ ＋ キック'
     ]
   };
   function applySelectCardCommands(card){
@@ -2102,6 +2102,8 @@
     crayfishComboStep:0,
     crayfishComboTime:0,
     guardTapTimes:[],
+    simpleGuardTapTimes:[],
+    lastSimpleGuardTapTime:0,
     lastBackInputTime:0,
     purpleGuardCount:0,
     purpleGuardLastTime:0,
@@ -3703,6 +3705,32 @@
     return taps.length>=2;
   }
 
+  function specialKawazuTonguePiledriver(f){
+    if(gameOver || !f || f.type!=='kawazu' || f.stun>0 || f.specialT>0) return false;
+    const other=f.isPlayer?enemy:player;
+    if(!other) return false;
+    if(Math.abs(other.x-f.x)>18) f.face=Math.sign(other.x-f.x)||f.face;
+
+    f.attack='tongue'; f.attackT=.42; f.tongueT=.42;
+    clearCommand();
+
+    const dx=(other.x-f.x)*f.face, dy=Math.abs(other.y-f.y);
+    if(dx<=0 || dx>f.tongueRange*1.18 || dy>105) return true;
+
+    setTimeout(()=>{
+      if(gameOver || !other || other.guard) return;
+      f.specialType='kawazuTonguePiledriver'; f.specialT=.88;
+      other.stun=Math.max(other.stun,.82);
+      // 水中版は絡めたあと斜め前下へ強く落とす。
+      other.vx=f.face*330;
+      other.vy=390;
+      damageHit(f,other,8.0*f.damageMul,150*f.face,210);
+      comboEl.textContent='SECRET!';
+      setTimeout(()=>{if(comboEl.textContent==='SECRET!')comboEl.textContent='';},600);
+    },120);
+    return true;
+  }
+
   function specialKawazuPressureRush(f){
     if(gameOver || f.stun>0 || f.specialT>0)return false;
     f.specialType='kawazuPressureRush';f.specialT=.62;f.attack='punch';f.attackT=.62;
@@ -3771,53 +3799,57 @@
 
   function trySpecial(f,kind){
     if(!f) return false;
+    const forward=f.face>0?'right':'left';
+    const back=f.face>0?'left':'right';
 
+    // カワズさん：4キャラ運用を前提に入力を短く。
     if(f.type==='kawazu'){
-      const forward=f.face>0?'right':'left';
-      const downForward=f.face>0?'downRight':'downLeft';
-      if(kind==='kick' && hasFacingCircle(f,true,1000)) return specialKawazuCyclone(f);
-      const q=hasCommand(['down',forward],760)||hasCommand(['down',downForward],760)||hasCommand([downForward,forward],760);
-      if(q && kind==='punch') return specialKawazuPressureRush(f);
-      if(q && kind==='kick') return specialKawazuMirageKick(f);
+      if(kind==='tongue' && hasCommand(['down',forward],720)){
+        clearCommand();
+        return specialKawazuTonguePiledriver(f);
+      }
+      if(kind==='kick' && hasCommand(['down',back],720)){
+        clearCommand();
+        return specialKawazuCyclone(f);
+      }
+      if(kind==='kick' && hasCommand([forward],520)){
+        clearCommand();
+        return specialKawazuMirageKick(f);
+      }
+      if(kind==='punch' && (input.punchTapTimes||[]).length>=2){
+        input.punchTapTimes=[];
+        clearCommand();
+        return specialKawazuPressureRush(f);
+      }
     }
 
+    // ミカエル：上＋パンチ / 前＋キック / 下→後ろ＋キック。
     if(f.type==='green'){
-      if(kind==='kick' && hasFacingCircle(f,true,1100)){
+      if(kind==='kick' && hasCommand(['down',back],720)){
+        clearCommand();
         return specialBurningCyclone(f);
       }
-
-      if(kind==='punch' && hasCommand(['down','up'],720)){
+      if(kind==='punch' && hasCommand(['up'],520)){
         clearCommand();
         return specialUppercut(f);
       }
-
-      const back=f.face>0?'left':'right';
-      const forward=f.face>0?'right':'left';
-      if(kind==='kick' && hasCommand(['down',forward],720)){
+      if(kind==='kick' && hasCommand([forward],520)){
         clearCommand();
         return specialDropKick(f);
       }
     }
 
+    // ガブリエル：後ろ＋パンチ / 後ろ＋キック / 前＋パンチ。
     if(f.type==='blue'){
-      const backDown=f.face>0?'downLeft':'downRight';
-      const forwardUp=f.face>0?'upRight':'upLeft';
-      const backUp=f.face>0?'upLeft':'upRight';
-      const forwardDown=f.face>0?'downRight':'downLeft';
-
-      const forward=f.face>0?'right':'left';
-
-      if(kind==='punch' && hasCommand(['down',forward],720)){
+      if(kind==='punch' && hasCommand([forward],520)){
         clearCommand();
         return specialAquaVortex(f);
       }
-
-      if(kind==='punch' && hasCommand([backDown,forwardUp],780)){
+      if(kind==='punch' && hasCommand([back],520)){
         clearCommand();
         return specialAquaTornado(f);
       }
-
-      if(kind==='kick' && hasCommand([backUp,forwardDown],780)){
+      if(kind==='kick' && hasCommand([back],520)){
         clearCommand();
         return specialAquaStream(f);
       }
@@ -3831,50 +3863,33 @@
     }
 
     if(f.type==='piranha'){
-      const back=f.face>0?'left':'right', forward=f.face>0?'right':'left';
-      if(kind==='tongue' && hasCommand([back,forward],850)){ clearCommand(); return specialPiranhaRush(f); }
+      if(!false && kind==='tongue' && hasCommand([back,forward],850)){
+        clearCommand(); return specialPiranhaRush(f);
+      }
       if(kind==='punch' && hasCommand(['down','up'],900)){ clearCommand(); return specialPiranhaDive(f,'punch'); }
       if(kind==='kick' && hasCommand(['down','up'],900)){ clearCommand(); return specialPiranhaDive(f,'kick'); }
     }
 
     if(f.type==='crayfish'){
-      if(kind==='kick' && hasCommand([f.face>0?'left':'right','down'],850)){
-        clearCommand();
-        return specialCrayfishBottomSmash(f);
-      }
+      if(kind==='kick' && hasCommand([back,'down'],850)){ clearCommand(); return specialCrayfishBottomSmash(f); }
     }
 
+    // ラファエル：ガード→パンチ / ガード→キック。
     if(f.type==='yellow'){
-      const forward=f.face>0?'right':'left';
-      const downForward=f.face>0?'downRight':'downLeft';
-
-      const pressureCommand =
-        hasCommand(['down',forward],900) ||
-        hasCommand(['down',downForward],900) ||
-        hasCommand([downForward,forward],900);
-
-      if(pressureCommand && (kind==='punch' || kind==='kick')){
+      const justGuarded=performance.now()-(input.lastSimpleGuardTapTime||0)<=650;
+      if(justGuarded && (kind==='punch'||kind==='kick')){
+        input.lastSimpleGuardTapTime=0;
         clearCommand();
-        if(kind==='punch') return specialPressureBlade(f,0,'punch');
-        return specialPressureBlade(f,15,'kick');
+        if(kind==='punch') return specialPressureBlade(f,0,'punch'); return specialPressureBlade(f,15,'kick');
       }
     }
 
     if(f.type==='beelzebub'){
-      const forward=f.face>0?'right':'left';
       const downForward=f.face>0?'downRight':'downLeft';
-
-      const bossQuarterCommand =
-        hasCommand(['down',forward],850) ||
-        hasCommand(['down',downForward],850) ||
-        hasCommand([downForward,forward],850);
-
-      if(kind==='punch' && bossQuarterCommand){
-        return specialFishRaid(f);
-      }
-      if(kind==='kick' && bossQuarterCommand){
-        return specialAbyssShock(f);
-      }
+      const bossQuarterCommand=
+        hasCommand(['down',forward],850)||hasCommand(['down',downForward],850)||hasCommand([downForward,forward],850);
+      if(kind==='punch' && bossQuarterCommand) return specialFishRaid(f);
+      if(kind==='kick' && bossQuarterCommand) return specialAbyssShock(f);
     }
 
     return false;
@@ -4298,6 +4313,41 @@
       e.preventDefault();btn.classList.add('pressed');
       if(action==='guard'){
         if(player){
+          // MIX簡易コマンド：ガード入力を共通タイマーで記録。
+          const simpleNow=performance.now();
+          input.simpleGuardTapTimes=(input.simpleGuardTapTimes||[]).filter(t=>simpleNow-t<=650);
+          input.simpleGuardTapTimes.push(simpleNow);
+          input.lastSimpleGuardTapTime=simpleNow;
+
+          // ラファエル：上＋ガードで高速バブル移動 / エアブースト。
+          if(player.type==='yellow' && !player.throwState && input.y<-.35){
+            input.simpleGuardTapTimes=[];
+            if(specialRaphaelBubbleMove(player)){
+              btn.classList.remove('pressed');
+              return;
+            }
+          }
+
+          // ラファエル：ガード×2でヒーリングバブル。
+          if(player.type==='yellow' && !player.throwState && input.simpleGuardTapTimes.length>=2){
+            input.simpleGuardTapTimes=[];
+            input.lastSimpleGuardTapTime=0;
+            if(specialHealingBubble(player)){
+              btn.classList.remove('pressed');
+              return;
+            }
+          }
+
+          // ウリエル：ガード×2でホワイトカウンター。
+          if(player.type==='orange' && !player.throwState && input.simpleGuardTapTimes.length>=2){
+            input.simpleGuardTapTimes=[];
+            input.lastSimpleGuardTapTime=0;
+            if(specialWhiteCounter(player)){
+              btn.classList.remove('pressed');
+              return;
+            }
+          }
+
           // ベルゼブブさん：方向キー1回転＋ガードで毒水
           if(player.type==='beelzebub' && !player.throwState && hasFullCircle(1100)){
             if(specialVenomWater(player)){
@@ -4325,7 +4375,7 @@
           }
 
           // ラファエルさん：敵が右なら反時計回り1回転＋ガードで高速バブル移動
-          if(player.type==='yellow' && !player.throwState && hasFacingCircle(player,false,1150)){
+          if(false && player.type==='yellow' && !player.throwState && hasFacingCircle(player,false,1150)){
             if(specialRaphaelBubbleMove(player)){
               btn.classList.remove('pressed');
               return;
@@ -4333,7 +4383,7 @@
           }
 
           // ラファエルさん：後ろ＋ガード×2で徐々に回復
-          if(player.type==='yellow' && !player.throwState){
+          if(false && player.type==='yellow' && !player.throwState){
             const now=performance.now();
             const backNow=(player.face>0 && input.x<-.35)||(player.face<0 && input.x>.35);
             input._raphaelGuardTimes=(input._raphaelGuardTimes||[]).filter(t=>now-t<720);
@@ -4347,7 +4397,7 @@
           }
 
           // ウリエルさん：1回転＋ガードでカウンター構え
-          if(player.type==='orange' && !player.throwState && hasFullCircle(1000)){
+          if(false && player.type==='orange' && !player.throwState && hasFullCircle(1000)){
             if(specialWhiteCounter(player)){btn.classList.remove('pressed');return;}
           }
 
