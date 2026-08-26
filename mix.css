@@ -122,3 +122,77 @@
 
 /* 古いemoji filter指定を無効化 */
 .map-frog{filter:none !important}
+
+/* v0.12 タイトル */
+.mix-title{
+  min-height:100svh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  padding:22px 14px;
+  text-align:center;
+  background:
+    radial-gradient(circle at 50% 22%,rgba(70,190,220,.30),transparent 31%),
+    linear-gradient(#0e5c68,#123b38 58%,#173126);
+}
+.mix-title[hidden]{display:none !important}
+.title-frogs{display:flex;align-items:center;gap:18px;margin-bottom:8px}
+.title-frogs .tf{display:block}
+.title-frogs .kawazu{font-size:70px;filter:hue-rotate(16deg) saturate(1.15)}
+.title-frogs .beel{font-size:70px;filter:grayscale(.85) brightness(.55) saturate(1.4)}
+.title-frogs .versus{font-size:24px;font-weight:1000;color:#fff6aa;text-shadow:0 3px 0 #0005}
+.mix-title h1{margin:4px 0 7px;font-size:clamp(34px,8vw,58px);line-height:1}
+.title-copy{margin:0 0 18px;font-size:clamp(16px,4vw,24px);font-weight:900;color:#f7ffc8}
+.difficulty-title{
+  width:min(540px,94vw);
+  padding:14px;
+  border-radius:20px;
+  background:#ffffff15;
+  border:1px solid #ffffff35;
+}
+.difficulty-title b{display:block;margin-bottom:10px}
+.difficulty-buttons{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.difficulty-buttons button{
+  border:2px solid #ffffff75;border-radius:14px;background:#ffffff18;color:#fff;
+  padding:11px 6px;font-weight:1000;
+}
+.difficulty-buttons button.selected{
+  background:#ffe76a;color:#473d08;border-color:#fff5b1;box-shadow:0 0 0 3px #ffe76a44;
+}
+.difficulty-title small{display:block;margin-top:9px;opacity:.72;font-size:10px}
+.mix-start-button{
+  margin-top:17px;border:2px solid #fff6b2;border-radius:999px;
+  background:#f5c537;color:#362b05;font-weight:1000;font-size:18px;
+  padding:13px 30px;box-shadow:0 6px 0 #9f7720;
+}
+.mix-start-button:active{transform:translateY(4px);box-shadow:0 2px 0 #9f7720}
+.title-version{margin-top:14px;font-size:9px;opacity:.62}
+
+/* 総大将 */
+.unit.leader{
+  width:46px !important;height:46px !important;
+  box-shadow:0 0 0 4px #ffd86a,0 5px 10px #0008 !important;
+}
+.unit.leader:after{
+  content:"👑";position:absolute;top:-18px;left:50%;transform:translateX(-50%);
+  font-size:17px;filter:none;
+}
+
+/* 勝敗画面 */
+.mix-result-overlay{
+  position:fixed;inset:0;z-index:200000;display:grid;place-items:center;
+  background:rgba(3,19,21,.94);padding:20px;text-align:center;
+}
+.mix-result-overlay[hidden]{display:none !important}
+.result-card{
+  width:min(430px,94vw);padding:28px 20px;border-radius:26px;
+  border:2px solid #ffffff55;background:#174540;box-shadow:0 20px 60px #000b;
+}
+.result-icon{font-size:72px}
+.result-card h2{margin:5px 0;font-size:36px;color:#fff6a7}
+.result-card p{white-space:pre-line;line-height:1.7}
+.result-card button{
+  margin-top:13px;border:2px solid #fff;border-radius:999px;padding:11px 22px;
+  background:#ffffff1b;color:#fff;font-weight:1000;
+}

@@ -8,24 +8,46 @@ function mixPageUrl(mode){
 const msg=document.getElementById('message'), turnLabel=document.getElementById('turnLabel'), sideLabel=document.getElementById('sideLabel');
 const kBases=document.getElementById('kBases'), bBases=document.getElementById('bBases');
 
+const mixTitle=document.getElementById('mixTitle');
+const mixMain=document.getElementById('mixMain');
+const mixResultOverlay=document.getElementById('mixResultOverlay');
+let mixDifficulty='normal';
+
+document.querySelectorAll('[data-difficulty]').forEach(btn=>{
+  btn.onclick=()=>{
+    mixDifficulty=btn.dataset.difficulty;
+    document.querySelectorAll('[data-difficulty]').forEach(b=>b.classList.toggle('selected',b===btn));
+  };
+});
+document.getElementById('mixStartButton').onclick=()=>{
+  try{localStorage.setItem('kaeru_difficulty',mixDifficulty)}catch(e){}
+  mixTitle.hidden=true;
+  mixMain.hidden=false;
+  render();
+  say('カワズ軍のターン','総大将のカワズさんを守りながら、ベルゼブブ本拠地を目指してください。');
+};
+document.getElementById('mixResultRestart').onclick=()=>{
+  sessionStorage.clear();
+  location.href=location.pathname;
+};
+
+
 const nodes={
  K:{x:8,y:70,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','WK']},
 
- // 陸地主ルート：こちらが最短。地上戦が起こりやすい。
- A:{x:21,y:65,name:'西あぜ道',terrain:'land',base:false,owner:null,links:['K','B','S1']},
- S1:{x:19,y:39,name:'森の祠',terrain:'land',base:true,owner:null,links:['A']},
- B:{x:35,y:65,name:'中央広場',terrain:'land',base:true,owner:null,links:['A','C','P1']},
- C:{x:50,y:66,name:'田んぼ道',terrain:'land',base:false,owner:null,links:['B','D','S2','P2']},
+ A:{x:21,y:65,name:'西あぜ道',terrain:'land',base:false,owner:null,links:['K','B','S1','P1']},
+ S1:{x:19,y:39,name:'森の祠',terrain:'land',base:true,owner:null,links:['A','P1']},
+ B:{x:35,y:65,name:'中央広場',terrain:'land',base:true,owner:null,links:['A','C','P1','P2','WK']},
+ C:{x:50,y:66,name:'田んぼ道',terrain:'land',base:false,owner:null,links:['B','D','S2','P1','P2','P3']},
  S2:{x:48,y:87,name:'古い井戸',terrain:'land',base:true,owner:null,links:['C']},
- D:{x:66,y:63,name:'東の岸辺',terrain:'land',base:true,owner:null,links:['C','E','P3']},
- E:{x:81,y:66,name:'東あぜ道',terrain:'land',base:false,owner:null,links:['D','Z','WZ']},
+ D:{x:66,y:63,name:'東の岸辺',terrain:'land',base:true,owner:null,links:['C','E','P2','P3','WZ']},
+ E:{x:81,y:66,name:'東あぜ道',terrain:'land',base:false,owner:null,links:['D','Z','WZ','P3']},
 
- // 水中ルート：水専門キャラはこちらを通って本拠地間を移動できる。
- WK:{x:20,y:84,name:'西水路',terrain:'water',base:false,owner:null,links:['K','P1']},
- P1:{x:34,y:40,name:'西の池',terrain:'water',base:true,owner:null,links:['WK','P2','B']},
- P2:{x:51,y:32,name:'大きな池',terrain:'water',base:true,owner:null,links:['P1','P3','C']},
- P3:{x:69,y:37,name:'深み',terrain:'water',base:false,owner:null,links:['P2','WZ','D']},
- WZ:{x:83,y:31,name:'東水路',terrain:'water',base:false,owner:null,links:['P3','Z','E']},
+ WK:{x:20,y:84,name:'西水路',terrain:'water',base:false,owner:null,links:['K','P1','B']},
+ P1:{x:34,y:40,name:'西の池',terrain:'water',base:true,owner:null,links:['WK','P2','A','B','C','S1']},
+ P2:{x:51,y:32,name:'大きな池',terrain:'water',base:true,owner:null,links:['P1','P3','B','C','D']},
+ P3:{x:69,y:37,name:'深み',terrain:'water',base:false,owner:null,links:['P2','WZ','C','D','E']},
+ WZ:{x:83,y:31,name:'東水路',terrain:'water',base:false,owner:null,links:['P3','Z','D','E']},
 
  Z:{x:92,y:66,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['E','WZ']}
 };
@@ -49,8 +71,8 @@ let turn=1, side='kawazu', selected=null, cpuBusy=false, units=[];
 
 function freshUnits(){
  return [
-  ...roster.kawazu.map((r,i)=>({id:'k'+i,side:'kawazu',name:r[0],icon:r[1],mobility:r[2],type:r[3],node:'K',hp:100,wait:0,moved:false})),
-  ...roster.beel.map((r,i)=>({id:'b'+i,side:'beel',name:r[0],icon:r[1],mobility:r[2],type:r[3],node:'Z',hp:100,wait:0,moved:false}))
+  ...roster.kawazu.map((r,i)=>({id:'k'+i,side:'kawazu',name:r[0],icon:r[1],mobility:r[2],type:r[3],node:'K',hp:100,wait:0,moved:false,leader:i===0,defeats:0})),
+  ...roster.beel.map((r,i)=>({id:'b'+i,side:'beel',name:r[0],icon:r[1],mobility:r[2],type:r[3],node:'Z',hp:100,wait:0,moved:false,leader:i===0,defeats:0}))
  ];
 }
 function makeUnits(){ units=freshUnits(); }
@@ -64,10 +86,26 @@ function restoreStrategy(){
   const s=JSON.parse(sessionStorage.getItem('mixStrategyState')||'null');
   if(!s||!Array.isArray(s.units))return false;
   turn=s.turn||1;side=s.side||'kawazu';units=s.units;
+  units.forEach(u=>{
+    if(typeof u.defeats!=='number')u.defeats=0;
+    if(u.id==='k0'||u.id==='b0')u.leader=true;
+  });
   if(s.owners)Object.entries(s.owners).forEach(([id,o])=>{if(nodes[id])nodes[id].owner=o});
   return true;
  }catch(e){return false}
 }
+function showMixResult(winnerSide,loserLeader){
+  const won=winnerSide==='kawazu';
+  document.getElementById('mixResultIcon').textContent=won?'🐸':'👑';
+  document.getElementById('mixResultTitle').textContent=won?'カワズ軍 勝利！':'ベルゼブブ軍 勝利…';
+  document.getElementById('mixResultText').textContent=won
+    ? 'ベルゼブブさんを撃破！\nカワズ軍が池と田んぼの縄張りを守り抜いた。'
+    : 'カワズさんが倒された！\nベルゼブブ軍がカワズ本拠地を制圧した。';
+  mixResultOverlay.hidden=false;
+  cpuBusy=true;
+  try{sessionStorage.removeItem('mixStrategyState')}catch(e){}
+}
+
 function applyBattleResult(){
  try{
   const result=JSON.parse(sessionStorage.getItem('mixBattleResult')||'null');
@@ -82,13 +120,25 @@ function applyBattleResult(){
   winner.node=battleNode;
   winner.hp=Math.max(1,winner.hp);
   if(nodes[battleNode]&&!nodes[battleNode].base)nodes[battleNode].owner=winner.side;
-  // 敗者は本拠地へ戻り2回の自軍ターンを待機。HPは0から回復待ち。
+
+  // 総大将を倒したらその時点で決着。
+  if(loser.leader){
+    loser.hp=0;
+    render();
+    setTimeout(()=>showMixResult(winner.side,loser),120);
+    return true;
+  }
+
+  // 通常キャラ：倒されるたびに復活待ちが 2→3→4… と増える。
+  loser.defeats=(loser.defeats||0)+1;
   loser.node=loser.side==='kawazu'?'K':'Z';
-  loser.hp=0;loser.wait=2;loser.moved=true;
+  loser.hp=0;
+  loser.wait=1+loser.defeats;
+  loser.moved=true;
   side=result.returnSide||'kawazu';
   saveStrategy();
   setTimeout(()=>{
-    say('戦闘結果',winner.name+'の勝ち！　'+loser.name+'は本拠地で2ターン回復待ち。');
+    say('戦闘結果',winner.name+'の勝ち！　'+loser.name+'は本拠地で'+loser.wait+'ターン回復待ち。');
     updateTurnButton();
   },80);
   return true;
@@ -147,7 +197,7 @@ function render(){
  units.forEach(u=>{
   const n=nodes[u.node],idx=counts[u.node]||0;counts[u.node]=idx+1;
   const [ox,oy]=stackOffset(idx),el=document.createElement('button');
-  el.className='unit '+u.side+(selected===u?' selected':'')+(u.wait?' waiting':'');
+  el.className='unit '+u.side+(selected===u?' selected':'')+(u.wait?' waiting':'')+(u.leader?' leader':'');
   el.style.left=`calc(${n.x}% + ${ox}px)`;el.style.top=`calc(${n.y}% + ${oy}px)`;
   el.title=u.name+(u.wait?'（回復待ち '+u.wait+'）':'');
   if(u.icon==='🐸'){
@@ -166,6 +216,7 @@ function render(){
 function selectUnit(u){
  if(side!=='kawazu'){say('ベルゼブブ軍 行動中','CPUが駒を動かしています。');return}
  if(u.side!=='kawazu'){say(u.name,'ベルゼブブ軍はCPUが操作します。');return}
+ if(u.leader){say(u.name,'総大将は本拠地を守るため移動できません。');return}
  if(u.wait){say(u.name,'本拠地で回復待ち：あと'+u.wait+'ターン');return}
  if(u.moved){say(u.name,'このターンは移動済みです。');return}
  selected=u;say(u.name,'移動先を選択。');render();
@@ -212,7 +263,7 @@ function chooseCpuMove(u){
 }
 async function runCpuTurn(){
  cpuBusy=true;side='beel';selected=null;render();say('ベルゼブブ軍のターン','CPUが行動します。');
- const actors=units.filter(u=>u.side==='beel'&&!u.wait&&!u.moved);
+ const actors=units.filter(u=>u.side==='beel'&&!u.wait&&!u.moved&&!u.leader);
  for(const u of actors){
   if(side!=='beel')break;await new Promise(r=>setTimeout(r,380));
   const to=chooseCpuMove(u);if(!to){u.moved=true;continue}
@@ -248,4 +299,4 @@ renderRoads();
 if(!restoreStrategy())makeUnits();
 const hadResult=applyBattleResult();
 render();
-if(!hadResult)say('カワズ軍のターン','陸地中心の戦場。池や寄り道の拠点をどう使うかがポイントです。');
+if(!hadResult)say('カワズ軍のターン','総大将を守りながら敵本拠地を目指します。');
