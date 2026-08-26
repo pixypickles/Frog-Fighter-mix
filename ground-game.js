@@ -106,6 +106,7 @@
   // The guard button may protrude slightly above the soil; drawing and collision
   // still share the exact same ground line.
   function landGroundDepth(){
+    if(innerWidth>innerHeight) return Math.min(105,Math.max(68,innerHeight*.14));
     return Math.min(235, Math.max(145, innerHeight * .155));
   }
   function landGroundTop(){
@@ -137,10 +138,13 @@
     return window.innerWidth > window.innerHeight;
   }
 
-  // Ground prototype: portrait play is the default on every device.
-  // Rotating the phone no longer starts or changes the game mode.
-  let portraitPlayMode=true;
-  document.body.classList.add('portrait-play');
+  // Ground prototype standalone stays portrait, but MIX battle uses landscape.
+  let portraitPlayMode=!mixBattleMode;
+  if(portraitPlayMode) document.body.classList.add('portrait-play');
+  else{
+    document.body.classList.remove('portrait-play');
+    document.body.classList.add('mix-ground-landscape');
+  }
 
   function enterPortraitPlay(){
     portraitPlayMode=true;
@@ -1074,7 +1078,7 @@
 
               if(hitDist < other.radius + 28){
                 this.specialHitDone=true;
-                damageHit(this,other,8.0*this.damageMul,90*this.face,-230);
+                damageHit(this,other,8.0*this.damageMul,185*this.face,-165);
               }
             }
           }else if(this.specialType==='dropkick'){
@@ -1693,7 +1697,7 @@
         ctx.beginPath();
         ctx.moveTo(15,48);
         if(this.attackVariant==='down'){
-          ctx.lineTo(52,78);
+          ctx.lineTo(64,58);
         }else{
           ctx.lineTo(60,48);
         }
@@ -1703,8 +1707,8 @@
         if(this.type==='kawazu'){
           ctx.save();
           ctx.fillStyle='#ff7a2f';
-          const ky=this.attackVariant==='down'?78:48;
-          const kx=this.attackVariant==='down'?52:60;
+          const ky=this.attackVariant==='down'?58:48;
+          const kx=this.attackVariant==='down'?64:60;
           ctx.beginPath();
           ctx.ellipse(kx,ky,10,7,0,0,Math.PI*2);
           ctx.fill();
@@ -3021,9 +3025,9 @@
     const spawnX=Math.max(54,Math.min(innerWidth-54,behindX));
     const targetX=Math.max(50,Math.min(innerWidth-50,other.x));
     const targetY=Math.max(innerHeight*.48,Math.min(groundY()-42,other.y+32));
-    const dx=targetX-spawnX, dy=Math.max(180,targetY-44);
+    const dx=(targetX-spawnX)+attackDir*180, dy=Math.max(120,targetY-44);
     const len=Math.hypot(dx,dy)||1;
-    const speed=455;
+    const speed=540;
 
     catfishCharges.push({
       owner:f,
@@ -3256,8 +3260,8 @@
     // 一瞬しゃがんだ後に、画面上方向へ強く跳ぶ
     setTimeout(()=>{
       if(!f || gameOver) return;
-      f.vy=-520;
-      f.vx+=f.face*70;
+      f.vy=-430;
+      f.vx+=f.face*245;
 
       comboEl.textContent='バーニングアッパー!';
       setTimeout(()=>{
@@ -3336,9 +3340,9 @@
 
     // 地上版：真上＋左右の3方向へ噴水のようにいったん打ち上げてから落下。
     [
-      {vx:-125,vy:-625},
-      {vx:0,   vy:-690},
-      {vx:125, vy:-625}
+      {vx:-330,vy:-520},
+      {vx:0,   vy:-610},
+      {vx:330, vy:-520}
     ].forEach((v,i)=>{
       toxicWaters.push({
         owner:f,t:5.4,life:5.4,tick:0,
@@ -4276,22 +4280,19 @@
         f.attack='tongue';
         f.attackT=.28;
 
-        // Ground 0.5: 2回目の舌は真下への叩きつけ。
+        // MIX横地上戦：2回目の舌は水中版と同じく前方へ投げる。
         const throwDir = f.face;
 
-        // 連続舌投げ時に前回の回転状態を引き継がない
         target.throwState=null;
         target.spinAngle=0;
 
-        const tongueDropHeight=Math.max(0,landFloorY()-target.y);
         target.throwState={
           owner:f,
           spinSpeed:f.face*13,
-          // 高所からでも床まで投げ状態が切れないよう余裕を持たせる。
-          endT:Math.min(1.18,.72+tongueDropHeight/1400),
+          endT:.78,
           noWallDamage:false,
-          tongueSlam:true,
-          dropHeight:tongueDropHeight
+          tongueSlam:false,
+          dropHeight:0
         };
         if(target.type==='crayfish'){
           target.belialThreadGrow=0;
@@ -4300,9 +4301,9 @@
         target.hurtFace='both';
         target.hurtFaceT=.7;
 
-        // 横へはほぼ動かさず、強く真下へ叩きつける。
-        target.vx = f.vx*.12;
-        target.vy = 980;
+        // 水平方向へ強く投げ、少しだけ浮かせる。
+        target.vx = f.face*690 + f.vx*.18;
+        target.vy = -70;
 
         target.stun=.55;
         f.tonguePullTarget=null;
@@ -5482,8 +5483,8 @@ function drawBackground(dt){
         if(target){
           const dx=target.x-n.x, dy=(target.y+28)-n.y;
           const len=Math.hypot(dx,dy)||1;
-          const desiredVx=dx/len*455, desiredVy=Math.max(245,dy/len*455);
-          const steer=210*dt;
+          const desiredVx=dx/len*560 + n.owner.face*85, desiredVy=Math.max(180,dy/len*420);
+          const steer=300*dt;
           n.vx += Math.max(-steer,Math.min(steer,desiredVx-n.vx));
           n.vy += Math.max(-steer,Math.min(steer,desiredVy-n.vy));
         }

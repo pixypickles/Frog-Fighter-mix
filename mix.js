@@ -9,18 +9,19 @@ const msg=document.getElementById('message'), turnLabel=document.getElementById(
 const kBases=document.getElementById('kBases'), bBases=document.getElementById('bBases');
 
 const nodes={
- K:{x:8,y:72,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A']},
- A:{x:22,y:63,name:'あぜ道',terrain:'land',base:false,owner:null,links:['K','B','S1']},
- S1:{x:20,y:37,name:'森の祠',terrain:'land',base:true,owner:null,links:['A']}, // 1つズレた行き止まり拠点
- B:{x:37,y:63,name:'中央広場',terrain:'land',base:true,owner:null,links:['A','C','P1']},
- P1:{x:39,y:37,name:'西の池',terrain:'water',base:true,owner:null,links:['B','P2']},
- C:{x:52,y:63,name:'田んぼ道',terrain:'land',base:false,owner:null,links:['B','D','S2']},
- S2:{x:55,y:84,name:'古い井戸',terrain:'land',base:true,owner:null,links:['C']}, // もう一つの行き止まり
- D:{x:67,y:58,name:'東の広場',terrain:'land',base:true,owner:null,links:['C','E','P2']},
- P2:{x:59,y:34,name:'大きな池',terrain:'water',base:true,owner:null,links:['P1','D','P3']},
- P3:{x:78,y:31,name:'深み',terrain:'water',base:false,owner:null,links:['P2','E']},
- E:{x:80,y:57,name:'湿地道',terrain:'land',base:false,owner:null,links:['D','P3','Z']},
- Z:{x:92,y:67,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['E']}
+ K:{x:8,y:70,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','WK']},
+ A:{x:22,y:63,name:'西あぜ道',terrain:'land',base:false,owner:null,links:['K','S1','P1']},
+ S1:{x:19,y:38,name:'森の祠',terrain:'land',base:true,owner:null,links:['A']},
+ WK:{x:22,y:82,name:'本拠地水路',terrain:'water',base:false,owner:null,links:['K','P1']},
+ P1:{x:37,y:56,name:'西の池',terrain:'water',base:true,owner:null,links:['A','WK','P2']},
+ P2:{x:53,y:43,name:'大きな池',terrain:'water',base:true,owner:null,links:['P1','P3','C']},
+ C:{x:52,y:71,name:'田んぼ道',terrain:'land',base:false,owner:null,links:['P2','S2','D']},
+ S2:{x:50,y:88,name:'古い井戸',terrain:'land',base:true,owner:null,links:['C']},
+ P3:{x:68,y:36,name:'深み',terrain:'water',base:false,owner:null,links:['P2','D','WZ']},
+ D:{x:69,y:62,name:'東の岸辺',terrain:'land',base:true,owner:null,links:['C','P3','E']},
+ E:{x:82,y:66,name:'東あぜ道',terrain:'land',base:false,owner:null,links:['D','Z']},
+ WZ:{x:82,y:29,name:'本拠地水路',terrain:'water',base:false,owner:null,links:['P3','Z']},
+ Z:{x:92,y:66,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['E','WZ']}
 };
 
 const roster={
@@ -80,7 +81,10 @@ function applyBattleResult(){
   loser.hp=0;loser.wait=2;loser.moved=true;
   side=result.returnSide||'kawazu';
   saveStrategy();
-  setTimeout(()=>say('戦闘結果',winner.name+'の勝ち！　'+loser.name+'は本拠地で2ターン回復待ち。'),80);
+  setTimeout(()=>{
+    say('戦闘結果',winner.name+'の勝ち！　'+loser.name+'は本拠地で2ターン回復待ち。');
+    updateTurnButton();
+  },80);
   return true;
  }catch(e){return false}
 }
@@ -106,6 +110,17 @@ function stackOffset(idx){
  if(idx===0)return[0,-7];
  const ring=Math.floor((idx-1)/6)+1,pos=(idx-1)%6,a=pos*Math.PI/3;
  return[Math.cos(a)*23*ring,Math.sin(a)*20*ring-7];
+}
+function updateTurnButton(){
+ const btn=document.getElementById('endTurn');
+ if(!btn)return;
+ if(side==='beel'){
+   btn.textContent='次へ';
+   btn.disabled=false;
+ }else{
+   btn.textContent='ターン終了';
+   btn.disabled=cpuBusy;
+ }
 }
 function render(){
  board.querySelectorAll('.node,.unit').forEach(e=>e.remove());
@@ -134,7 +149,7 @@ function render(){
  const bc={kawazu:0,beel:0};Object.values(nodes).forEach(n=>{if(n.owner)bc[n.owner]++});
  kBases.textContent=bc.kawazu;bBases.textContent=bc.beel;
  turnLabel.textContent='TURN '+turn;sideLabel.textContent=side==='kawazu'?'カワズ軍':'ベルゼブブ軍（CPU）';
- document.getElementById('endTurn').disabled=side!=='kawazu'||cpuBusy;
+ updateTurnButton();
 }
 function selectUnit(u){
  if(side!=='kawazu'){say('ベルゼブブ軍 行動中','CPUが駒を動かしています。');return}
@@ -155,10 +170,10 @@ function encounter(attacker,defender,to){
 }
 function showRotateThenBattle(terrain,a,b,n){
  let ov=document.getElementById('mixRotateOverlay');if(!ov){ov=document.createElement('div');ov.id='mixRotateOverlay';document.body.appendChild(ov)}
- const portrait=terrain==='land';
- ov.innerHTML='<div class="rotate-card"><div class="rotate-icon">📱</div><b>'+(portrait?'スマホを縦持ちしてください':'スマホを横持ちしてください')+'</b><span>'+n.name+'：'+a.name+' VS '+b.name+'</span><small>'+(portrait?'地上ジャンプバトル':'水中バトル')+'</small><button id="mixBattleGo">この向きでバトル開始</button></div>';
+ const portrait=false;
+ ov.innerHTML='<div class="rotate-card"><div class="rotate-icon">📱</div><b>スマホを横持ちしてください</b><span>'+n.name+'：'+a.name+' VS '+b.name+'</span><small>'+(terrain==='land'?'地上ジャンプバトル（横画面）':'水中バトル')+'</small><button id="mixBattleGo">この向きでバトル開始</button></div>';
  ov.classList.add('show');
- const ready=()=>portrait?(innerHeight>=innerWidth):(innerWidth>=innerHeight);
+ const ready=()=>innerWidth>=innerHeight;
  let gone=false;
  const go=()=>{if(gone)return;gone=true;ov.classList.remove('show');location.href=mixPageUrl(terrain)};
  document.getElementById('mixBattleGo').onclick=go;
@@ -185,7 +200,7 @@ function chooseCpuMove(u){
 }
 async function runCpuTurn(){
  cpuBusy=true;side='beel';selected=null;render();say('ベルゼブブ軍のターン','CPUが行動します。');
- const actors=units.filter(u=>u.side==='beel'&&!u.wait);
+ const actors=units.filter(u=>u.side==='beel'&&!u.wait&&!u.moved);
  for(const u of actors){
   if(side!=='beel')break;await new Promise(r=>setTimeout(r,380));
   const to=chooseCpuMove(u);if(!to){u.moved=true;continue}
@@ -211,7 +226,10 @@ function endHumanTurn(){
  if(side!=='kawazu'||cpuBusy)return;selected=null;healSide('beel');saveStrategy();runCpuTurn();
 }
 function say(a,b){msg.innerHTML='<b>'+a+'</b><span>'+b+'</span>'}
-document.getElementById('endTurn').onclick=endHumanTurn;
+document.getElementById('endTurn').onclick=()=>{
+ if(side==='beel'&&!cpuBusy){runCpuTurn();return;}
+ endHumanTurn();
+};
 document.getElementById('resetGame').onclick=()=>{if(confirm('最初からやり直しますか？')){sessionStorage.removeItem('mixStrategyState');sessionStorage.removeItem('mixBattleResult');Object.values(nodes).forEach(n=>{n.owner=n.base?(n===nodes.K?'kawazu':n===nodes.Z?'beel':null):null});makeUnits();turn=1;side='kawazu';selected=null;cpuBusy=false;saveStrategy();render();say('カワズ軍のターン','駒をタップすると進める道が光ります。')}};
 
 renderRoads();

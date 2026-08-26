@@ -1816,3 +1816,36 @@ body.portrait-play .guard{right:25% !important;bottom:46% !important}
   border:1px solid rgba(255,255,255,.55);border-radius:999px;padding:7px 12px;
   font:900 12px/1.1 system-ui,-apple-system,sans-serif;backdrop-filter:blur(4px);
 }
+
+/* MIX v0.8: 地上ジャンプ戦を横画面化。重力/自動ジャンプはそのまま */
+body.mix-ground-landscape{
+  overflow:hidden !important;
+  touch-action:none !important;
+}
+body.mix-ground-landscape #portraitOverlay{
+  display:none !important;
+}
+body.mix-ground-landscape #game{
+  display:flex;
+}
+body.mix-ground-landscape .stick-zone{
+  left:0 !important;
+  bottom:0 !important;
+  width:42vw !important;
+  height:48vh !important;
+}
+body.mix-ground-landscape .stick-base{
+  left:18px !important;
+  bottom:18px !important;
+  width:128px !important;
+  height:128px !important;
+}
+body.mix-ground-landscape .action{
+  width:76px !important;
+  height:76px !important;
+}
+body.mix-ground-landscape .punch{right:18% !important;bottom:7% !important}
+body.mix-ground-landscape .kick{right:5% !important;bottom:20% !important}
+body.mix-ground-landscape .tongue{right:34% !important;bottom:21% !important}
+body.mix-ground-landscape .guard{right:18% !important;bottom:34% !important}
+body.mix-ground-landscape .practice-help{width:min(560px,58vw) !important;top:12% !important}
