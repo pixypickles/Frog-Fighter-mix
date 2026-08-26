@@ -144,7 +144,12 @@ function render(){
   el.className='unit '+u.side+(selected===u?' selected':'')+(u.wait?' waiting':'');
   el.style.left=`calc(${n.x}% + ${ox}px)`;el.style.top=`calc(${n.y}% + ${oy}px)`;
   el.title=u.name+(u.wait?'（回復待ち '+u.wait+'）':'');
-  el.innerHTML=u.icon+'<span class="hp-mini"><i style="width:'+u.hp+'%"></i></span>';
+  if(u.icon==='🐸'){
+    el.classList.add('frog-piece','frog-'+u.type);
+    el.innerHTML='<span class="map-frog">🐸</span><span class="hp-mini"><i style="width:'+u.hp+'%"></i></span>';
+  }else{
+    el.innerHTML=u.icon+'<span class="hp-mini"><i style="width:'+u.hp+'%"></i></span>';
+  }
   el.onclick=()=>selectUnit(u);board.appendChild(el);
  });
  const bc={kawazu:0,beel:0};Object.values(nodes).forEach(n=>{if(n.owner)bc[n.owner]++});

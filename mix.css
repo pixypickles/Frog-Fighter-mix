@@ -22,3 +22,14 @@
 
 .node.base{border-color:#ffd5df;box-shadow:0 0 0 3px #ff8fab66,0 5px 0 #0004}
 .node.base b{font-size:12px}
+
+/* v0.10 マップ駒：カエルをキャラクターごとの色で識別 */
+.map-frog{display:block;font-size:20px;line-height:1;filter:var(--frog-filter,none)}
+.frog-kawazu{--frog-filter:hue-rotate(18deg) saturate(1.25) brightness(1.04)}
+.frog-green{--frog-filter:hue-rotate(0deg) saturate(1.15)}
+.frog-blue{--frog-filter:hue-rotate(120deg) saturate(1.65) brightness(.98)}
+.frog-yellow{--frog-filter:hue-rotate(300deg) saturate(1.8) brightness(1.18)}
+.frog-orange{--frog-filter:hue-rotate(325deg) saturate(2.2) brightness(1.08)}
+.frog-beelzebub{--frog-filter:grayscale(.85) sepia(.35) saturate(2.2) brightness(.68)}
+.frog-black{--frog-filter:grayscale(1) brightness(.38)}
+.frog-purple{--frog-filter:hue-rotate(205deg) saturate(1.9) brightness(.9)}
