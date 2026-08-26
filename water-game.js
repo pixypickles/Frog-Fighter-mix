@@ -45,6 +45,9 @@
   let selectedOpponent = 'blue';
   // MIX戦闘連携
   const mixBattleMode=new URLSearchParams(location.search).get('mix')==='1' && new URLSearchParams(location.search).get('battle')==='1';
+  const mixPracticeParams=new URLSearchParams(location.search);
+  const mixPracticeMode=mixPracticeParams.get('mixpractice')==='1';
+  const mixPracticeFighter=mixPracticeParams.get('fighter')||'green';
   let mixBattleContext=null;
   try{ if(mixBattleMode) mixBattleContext=JSON.parse(sessionStorage.getItem('mixBattle')||'null'); }catch(e){}
 
@@ -548,9 +551,14 @@
   }
 
   if(practiceExitButton){
+    if(mixPracticeMode) practiceExitButton.textContent='MIXタイトルへ戻る';
     practiceExitButton.addEventListener('pointerup',(e)=>{
       e.preventDefault();
       e.stopPropagation();
+      if(mixPracticeMode){
+        location.href=new URL('index.html',location.href).href;
+        return;
+      }
 
       gameMode='battle';
       if(practiceHelp){practiceHelp.hidden=true;practiceHelp.style.display='none';}
@@ -2607,60 +2615,12 @@
 
   function practiceSpecialText(type){
     const map={
-      green:[
-        '↓ ↑ ＋ パンチ：バーニングアッパー',
-        '↓ → ＋ キック：バーニングキック',
-        '時計回り1回転 ＋ キック：バーニングサイクロン（敵が右の場合）'
-      ],
-      blue:[
-        '↙ ↗ ＋ パンチ：アクアトルネード',
-        '↖ ↘ ＋ キック：アクアストリーム',
-        '↓ → ＋ パンチ：アクアボルテックス'
-      ],
-      black:[
-        '→ → ＋ パンチ：ヘルクラッシュ',
-        '後ろを押しながらパンチ長押し → 離す：アビスチャージ'
-      ],
-      purple:[
-        '舌×3：リボンラッシュ',
-        '後ろ ＋ ガード×2：ナマズ突進',
-        '後ろ ＋ キック：バックスピンキック（キック追加入力で追加回転）'
-      ],
-      yellow:[
-        '↓ → ＋ パンチ：水圧カッター（真横）',
-        '↓ → ＋ キック：水圧カッター（約15°下）',
-        '後ろ ＋ ガード×2：ヒーリングバブル',
-        '反時計回り1回転 ＋ ガード：高速バブル移動（敵が右の場合）'
-      ],
-      orange:[
-        'スティック1回転 ＋ ガード：ホワイトカウンター',
-        '← → ＋ ガード：ガーディアンタックル',
-        'ガード長押し→離す：ホワイトオーラ（長押し時間に応じて維持）',
-        'ホワイトオーラ中：少しずつHP回復＋白いリーチ約3倍攻撃'
-      ],
-      piranha:[
-        '← → ＋ 舌：高速突進噛みつき',
-        '↓ ↑ ＋ パンチ：前寄りへ急降下',
-        '↓ ↑ ＋ キック：後ろ寄りへ急降下'
-      ],
-      crayfish:[
-        'パンチ×3：クローラッシュ',
-        '← ↓ ＋ キック：ボトムスマッシュ',
-        '↓ ＋ ガード×2：クロー・カウンター'
-      ],
-      beelzebub:[
-        '舌：通常の約1.5倍リーチ＋軽い上下追尾',
-        '方向キー1回転 ＋ ガード：ヴェノム・ウォーター',
-        '↓ → ＋ パンチ：フィッシュ・レイド',
-        '↓ → ＋ キック：アビスショック'
-      ],
-      kawazu:[
-        '↓ → ＋ パンチ：水圧ラッシュ（小型衝撃波を扇状に乱射）',
-        '↓ → ＋ キック：ミラージュキック（初撃ヒットで残像連続蹴り）',
-        '時計回り1回転 ＋ キック：ハイスピードサイクロン'
-      ]
+      green:['↑ ＋ パンチ：バーニングアッパー','前 ＋ キック：バーニングキック','下 → 後ろ ＋ キック：バーニングサイクロン','下 → 後ろ ＋ ガード：レッドオーラ（少量回復＋次の攻撃強化）'],
+      blue:['ガード → パンチ：アクアトルネード（約15°上）','ガード → キック：アクアストリーム（約8°下）','前 ＋ パンチ：アクアボルテックス（HP少量吸収）'],
+      yellow:['ガード → パンチ：水圧カッター','ガード → キック：水圧カッター','ガード ×2：ヒーリングバブル','↑ ＋ ガード：高速バブル移動'],
+      orange:['ガード ×2：ホワイトカウンター','後ろ → 前 ＋ ガード：ガーディアンタックル','ガード長押し → 離す：ホワイトオーラ','ホワイトオーラ中：HPが少しずつ回復＋白いリーチ攻撃']
     };
-    return map[type] || ['専用必殺技：準備中'];
+    return map[type] || ['専用必殺技：練習対象外'];
   }
 
   function updatePracticeHelp(){
@@ -5998,6 +5958,18 @@ function drawBackground(dt){
 
   resize();
   requestAnimationFrame(loop);
+
+  // MIXタイトルの「地上/水中バトル練習」から直接開始。
+  if(mixPracticeMode){
+    setTimeout(()=>{
+      selectedFighter=['green','blue','yellow','orange'].includes(mixPracticeFighter)?mixPracticeFighter:'green';
+      show('game');resize();startPractice();
+      if(practiceExitButton){
+        practiceExitButton.hidden=false;
+        practiceExitButton.textContent='MIXタイトルへ戻る';
+      }
+    },80);
+  }
 
   // MIXから呼ばれた場合はキャラ選択を飛ばして遭遇戦を開始。
   if(mixBattleMode && mixBattleContext){

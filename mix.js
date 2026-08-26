@@ -21,6 +21,84 @@ const defenderSelectOverlay=document.getElementById('defenderSelectOverlay');
 const defenderChoices=document.getElementById('defenderChoices');
 const defenderSelectText=document.getElementById('defenderSelectText');
 const defenderSelectCancel=document.getElementById('defenderSelectCancel');
+
+const mixPracticeOverlay=document.getElementById('mixPracticeOverlay');
+const mixPracticeTitle=document.getElementById('mixPracticeTitle');
+const mixPracticeFighters=document.getElementById('mixPracticeFighters');
+const mixPracticeFighterName=document.getElementById('mixPracticeFighterName');
+const mixPracticeMoveList=document.getElementById('mixPracticeMoveList');
+const mixPracticeGo=document.getElementById('mixPracticeGo');
+const mixPracticeCancel=document.getElementById('mixPracticeCancel');
+const kawazuBriefingOverlay=document.getElementById('kawazuBriefingOverlay');
+const kawazuBriefingNext=document.getElementById('kawazuBriefingNext');
+
+let practiceModeChoice='ground';
+let practiceFighterChoice='green';
+let kawazuBriefed=false;
+
+const KAWAZU_TEAM_PRACTICE={
+ green:{
+  name:'ミカエルさん',
+  ground:['↑ ＋ パンチ：バーニングアッパー','前 ＋ キック：バーニングキック','下 → 後ろ ＋ キック：バーニングサイクロン','下 → 後ろ ＋ ガード：レッドオーラ（少量回復＋次の攻撃強化）'],
+  water:['↑ ＋ パンチ：バーニングアッパー','前 ＋ キック：バーニングキック','下 → 後ろ ＋ キック：バーニングサイクロン','下 → 後ろ ＋ ガード：レッドオーラ（少量回復＋次の攻撃強化）']
+ },
+ blue:{
+  name:'ガブリエルさん',
+  ground:['ガード → パンチ：アクアトルネード（約15°上）','ガード → キック：アクアストリーム（約8°下）','前 ＋ パンチ：アクアボルテックス（HP少量吸収）'],
+  water:['ガード → パンチ：アクアトルネード（約15°上）','ガード → キック：アクアストリーム（約8°下）','前 ＋ パンチ：アクアボルテックス（HP少量吸収）']
+ },
+ yellow:{
+  name:'ラファエルさん',
+  ground:['ガード → パンチ：エアカッター','ガード → キック：エアカッター','ガード ×2：ヒーリングバブル','↑ ＋ ガード：エアブースト','↑ ＋ パンチ：ウィンドライズ'],
+  water:['ガード → パンチ：水圧カッター','ガード → キック：水圧カッター','ガード ×2：ヒーリングバブル','↑ ＋ ガード：高速バブル移動']
+ },
+ orange:{
+  name:'ウリエルさん',
+  ground:['ガード ×2：ホワイトカウンター','後ろ → 前 ＋ ガード：ガーディアンタックル','ガード長押し → 離す：ホワイトオーラ','ホワイトオーラ中：HPが少しずつ回復＋白いリーチ攻撃'],
+  water:['ガード ×2：ホワイトカウンター','後ろ → 前 ＋ ガード：ガーディアンタックル','ガード長押し → 離す：ホワイトオーラ','ホワイトオーラ中：HPが少しずつ回復＋白いリーチ攻撃']
+ }
+};
+
+function renderMixPractice(){
+  mixPracticeTitle.textContent=practiceModeChoice==='ground'?'🌱 地上バトル練習':'💧 水中バトル練習';
+  mixPracticeFighters.innerHTML='';
+  Object.entries(KAWAZU_TEAM_PRACTICE).forEach(([type,data])=>{
+    const b=document.createElement('button');
+    b.className='mix-practice-fighter'+(practiceFighterChoice===type?' selected':'');
+    b.textContent=data.name;
+    b.onclick=()=>{practiceFighterChoice=type;renderMixPractice();};
+    mixPracticeFighters.appendChild(b);
+  });
+  const d=KAWAZU_TEAM_PRACTICE[practiceFighterChoice];
+  mixPracticeFighterName.textContent=d.name;
+  mixPracticeMoveList.innerHTML=d[practiceModeChoice].map(v=>'<span>'+v+'</span>').join('');
+}
+function openMixPractice(mode){
+  practiceModeChoice=mode;
+  practiceFighterChoice='green';
+  renderMixPractice();
+  mixPracticeOverlay.hidden=false;
+}
+document.getElementById('groundPracticeButton').onclick=()=>openMixPractice('ground');
+document.getElementById('waterPracticeButton').onclick=()=>openMixPractice('water');
+mixPracticeCancel.onclick=()=>{mixPracticeOverlay.hidden=true;};
+mixPracticeGo.onclick=()=>{
+  const file=practiceModeChoice==='ground'?'ground-index.html':'water-index.html';
+  location.href=new URL(file+'?mixpractice=1&fighter='+encodeURIComponent(practiceFighterChoice),MIX_BASE_URL).href;
+};
+
+function showKawazuBriefing(done){
+  if(kawazuBriefed){done();return;}
+  kawazuBriefed=true;
+  saveStrategy();
+  kawazuBriefingOverlay.hidden=false;
+  kawazuBriefingNext.onclick=()=>{
+    kawazuBriefingOverlay.hidden=true;
+    kawazuBriefingNext.onclick=null;
+    done();
+  };
+}
+
 let selectedMap='map1';
 
 
@@ -116,7 +194,7 @@ document.querySelectorAll('[data-map]').forEach(btn=>{
     nodes=cloneNodes(selectedMap);
     sessionStorage.removeItem('mixStrategyState');
     sessionStorage.removeItem('mixBattleResult');
-    turn=1;side='kawazu';selected=null;cpuBusy=false;
+    turn=1;side='kawazu';selected=null;cpuBusy=false;kawazuBriefed=false;
     makeUnits();
     mapSelectOverlay.hidden=true;
     mixTitle.hidden=true;
@@ -193,7 +271,7 @@ function makeUnits(){ units=freshUnits(); }
 
 function saveStrategy(){
  const owners={};Object.entries(nodes).forEach(([id,n])=>owners[id]=n.owner);
- sessionStorage.setItem('mixStrategyState',JSON.stringify({turn,side,units,owners,selectedMap,traps}));
+ sessionStorage.setItem('mixStrategyState',JSON.stringify({turn,side,units,owners,selectedMap,traps,kawazuBriefed}));
 }
 function restoreStrategy(){
  try{
@@ -201,7 +279,7 @@ function restoreStrategy(){
   if(!s||!Array.isArray(s.units))return false;
   selectedMap=s.selectedMap||'map1';
   nodes=cloneNodes(selectedMap);
-  turn=s.turn||1;side=s.side||'kawazu';units=s.units;traps=s.traps||{kawazu:{damage:null,stop:null},beel:{damage:null,stop:null}};
+  turn=s.turn||1;side=s.side||'kawazu';units=s.units;traps=s.traps||{kawazu:{damage:null,stop:null},beel:{damage:null,stop:null}};kawazuBriefed=!!s.kawazuBriefed;
   units.forEach(u=>{
     if(typeof u.defeats!=='number')u.defeats=0;
     if(u.id==='k0'||u.id==='b0')u.leader=true;
@@ -375,6 +453,12 @@ function chooseHqTerrain(attacker,defender,to,done){
   const isLeaderFight=!!(defender&&defender.leader);
   if(!isHq || !isLeaderFight){
     done(n.terrain==='both'?'land':n.terrain);
+    return;
+  }
+
+  // カワズさん自身の最初の本拠地防衛戦だけ、敗北条件とコマンドを先に説明。
+  if(defender.side==='kawazu' && defender.leader && !kawazuBriefed){
+    showKawazuBriefing(()=>chooseHqTerrain(attacker,defender,to,done));
     return;
   }
 
