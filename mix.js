@@ -2,7 +2,7 @@ const board=document.getElementById('board'), roads=document.getElementById('roa
 const mixScript=[...document.scripts].find(s=>/\/mix\.js(?:\?|$)/.test(s.src));
 const MIX_BASE_URL=mixScript ? new URL('./',mixScript.src) : new URL('./',location.href);
 function mixPageUrl(mode){
-  return new URL((mode==='water'?'water/':'ground/')+'index.html?mix=1&battle=1',MIX_BASE_URL).href;
+  return new URL((mode==='water'?'water-index.html':'ground-index.html')+'?mix=1&battle=1',MIX_BASE_URL).href;
 }
 
 const msg=document.getElementById('message'), turnLabel=document.getElementById('turnLabel'), sideLabel=document.getElementById('sideLabel');

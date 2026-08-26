@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b6f7a" />
+  <title>カエルファイター</title>
+  <link rel="stylesheet" href="water-style.css" />
+</head>
+<body>
+  <div id="app">
+    <section id="titleScreen" class="screen active">
+      <div class="bubble b1"></div><div class="bubble b2"></div><div class="bubble b3"></div>
+      <div class="title-frog" aria-hidden="true">🐸</div>
+      <h1>カエルファイター</h1>
+      <p class="subtitle">池のいちばん強いヤツを決めろ！</p>
+      <p class="rotate-note">スマホを横持ちすると自動で始まります</p>
+      <div class="start-version">VERSION 6.49</div>
+      <div class="title-start-actions">
+        <button id="portraitStart" class="soft-btn portrait-start-btn">縦画面のまま始める</button>
+        <button id="desktopStart" class="soft-btn">PCで試す</button>
+      </div>
+      <p class="portrait-start-note">横画面にできない端末はこちら</p>
+    </section>
+
+    <section id="selectScreen" class="screen">
+      <h2>ファイターをえらぶ</h2>
+      <div class="fighter-grid">
+        <button class="fighter-card selected" data-fighter="green">
+          <span class="fighter-emoji" style="--frog-body:#35d851;--frog-eye-bump:#69e86e;--frog-iris:#173126;--frog-mouth:#146030;--frog-cheek:#d7b774;position:absolute;left:18px;top:50%;transform:translateY(-50%);--frog-eye-area:#ffffff;">🐸</span>
+          <strong>ミカエルさん</strong>
+        
+          <span class="special-hint move-names">バーニングアッパー / バーニングキック / バーニングサイクロン</span>
+        </button>
+        <button class="fighter-card" data-fighter="blue">
+          <span class="fighter-emoji blue-frog" style="--frog-body:#35bde6;--frog-eye-bump:#63d9f5;--frog-iris:#15362f;--frog-mouth:#0d6547;--frog-cheek:#89c6b4;position:absolute;left:18px;top:50%;transform:translateY(-50%);--frog-eye-area:#ffffff;">🐸</span>
+          <strong>ガブリエルさん</strong>
+        
+          <span class="special-hint move-names">アクアトルネード / アクアストリーム / アクアボルテックス</span>
+        </button>
+        <button class="fighter-card" data-fighter="black">
+          <span class="fighter-emoji black-frog" style="--frog-body:#3b3e47;--frog-eye-bump:#50545f;--frog-iris:#101010;--frog-mouth:#183024;--frog-cheek:#a75e70;position:absolute;left:18px;top:50%;transform:translateY(-50%);--frog-eye-area:#ffffff;">🐸</span>
+          <strong>ルシファーさん</strong>
+        
+          <span class="special-hint move-names">ヘルクラッシュ / アビスチャージ</span>
+        </button>
+        <button class="fighter-card" data-fighter="purple">
+          <span class="fighter-emoji purple-frog" style="--frog-body:#9850c8;--frog-eye-bump:#ad65dc;--frog-iris:#14312b;--frog-mouth:#275a37;--frog-cheek:#db64ad;position:absolute;left:18px;top:50%;transform:translateY(-50%);--frog-eye-area:#ffffff;">🐸</span>
+          <strong>リリスさん</strong>
+        
+          <span class="special-hint move-names">リボンラッシュ / ナマズさん突進 / バックスピンキック</span>
+        </button>
+        <button class="fighter-card" data-fighter="yellow">
+          <span class="fighter-emoji yellow-frog" style="--frog-body:#e3cf42;--frog-eye-bump:#f2df66;--frog-iris:#26351c;--frog-mouth:#557528;--frog-cheek:#e9a761;position:absolute;left:18px;top:50%;transform:translateY(-50%);--frog-eye-area:#ffffff;">🐸</span>
+          <strong>ラファエルさん</strong>
+        
+          <span class="special-hint move-names">水圧カッター / ヒーリングバブル / 高速バブル移動</span>
+        </button>
+        <button class="fighter-card" data-fighter="orange">
+          <span class="fighter-emoji orange-frog" style="--frog-body:#ef8c36;--frog-eye-bump:#f6a24e;--frog-iris:#26321d;--frog-mouth:#6b4f1c;--frog-cheek:#f1bc65;position:absolute;left:18px;top:50%;transform:translateY(-50%);--frog-eye-area:#ffffff;">🐸</span>
+          <strong>ウリエルさん</strong>
+        
+          <span class="special-hint move-names">ホワイトカウンター / ガーディアンタックル / ホワイトリーチ</span>
+        </button>
+        <button class="fighter-card" data-fighter="piranha">
+          <span class="fighter-emoji creature-emoji">🐟</span>
+          <strong>リヴァイアさん</strong>
+        
+          <span class="special-hint move-names">高速突進噛みつき / 急降下背びれ / 急降下テール</span>
+        </button>
+        <button class="fighter-card" data-fighter="crayfish">
+          <span class="fighter-emoji creature-emoji">🦞</span>
+          <strong>アスモデウスさん</strong>
+        
+          <span class="special-hint move-names">クローラッシュ / ボトムスマッシュ / クロー・カウンター</span>
+        </button>
+        <button id="beelzebubCard" class="fighter-card boss-card" data-fighter="beelzebub" hidden>
+          <span class="fighter-emoji boss-frog" style="--frog-body:#111714;--frog-eye-bump:#6eff20;--frog-iris:#b5ff48;--frog-mouth:#70d52b;--frog-cheek:#547232;position:absolute;left:18px;top:50%;transform:translateY(-50%);--frog-eye-area:#ffffff;">🐸</span>
+          <strong>ベルゼブブさん</strong>
+          <span class="special-hint move-names">ヴェノム・ウォーター / フィッシュ・レイド / アビスショック</span>
+        </button>
+
+      </div>
+
+      <div class="battle-mode-panel">
+        <div class="opponent-pick">
+          <label for="opponentSelect">フリー対戦：対戦相手</label>
+          <select id="opponentSelect">
+            <option value="blue">ガブリエルさん</option>
+            <option value="green">ミカエルさん</option>
+            <option value="black">ルシファーさん</option>
+            <option value="purple">リリスさん</option>
+            <option value="yellow">ラファエルさん</option>
+            <option value="orange">ウリエルさん</option>
+            <option value="piranha">リヴァイアさん</option>
+            <option value="crayfish">アスモデウスさん</option>
+            <option id="beelzebubOpponent" value="beelzebub" hidden>ベルゼブブさん</option>
+          </select>
+        </div>
+        <div class="story-rule">
+          ストーリー：自分以外の全員＋最後にボス／3敗までOK
+        </div>
+      </div>
+
+      <div class="difficulty-panel">
+        <span class="difficulty-label">難易度</span>
+        <div class="difficulty-buttons">
+          <button type="button" class="difficulty-btn" data-difficulty="easy">イージー</button>
+          <button type="button" class="difficulty-btn selected" data-difficulty="normal">ノーマル</button>
+          <button type="button" class="difficulty-btn" data-difficulty="hard">ハード</button>
+        </div>
+      </div>
+
+      <div class="sound-panel">
+        <span>効果音</span>
+        <button id="soundToggle" type="button" class="sound-toggle">SE ON</button>
+      </div>
+
+      <div class="mode-menu">
+        <button id="fightButton" class="primary-btn">フリー対戦</button>
+        <button id="storyButton" class="primary-btn story-btn">ストーリー</button>
+        <div class="practice-entry-wrap">
+          <button id="practiceBtn" class="practice-btn">操作練習</button>
+          <span class="practice-beginner-badge">← 初めての方はココ</span>
+        </div>
+      </div>
+
+      <p class="auto-attack-note">自動補正：相手が上ならパンチが上向き / 相手が下ならキックが下向き</p>
+      <div id="bossTeaser" class="boss-teaser" hidden>
+        STORY BOSS：ベルゼブブさん
+      </div>
+    </section>
+
+    <section id="gameScreen" class="screen game-screen">
+      <canvas id="gameCanvas"></canvas>
+      <div id="storyNarrative" class="story-narrative" hidden>
+        <div class="story-narrative-box">
+          <div id="storyNarrativeText" class="story-narrative-text"></div>
+          <button id="storyNarrativeNext" class="primary-btn">次へ</button>
+        </div>
+      </div>
+      <div id="practiceHelp" class="practice-help" hidden>
+        <div class="practice-help-common">
+          舌ボタンで掴み中に、もう一度舌ボタンで舌投げ
+          <div class="practice-help-note">※相手も舌を絡めてきたら投げられない</div>
+        </div>
+        <div id="practiceSpecialTitle" class="practice-help-title"></div>
+        <div id="practiceSpecialMoves" class="practice-help-moves"></div>
+      </div>
+
+      <div id="leafMiniHud" class="leaf-mini-hud" hidden>
+        <strong>LEAF BREAK</strong>
+        <span>残り <b id="leafMiniTime">60.0</b> 秒</span>
+        <span>スコア <b id="leafMiniScore">0</b></span>
+      </div>
+      <div id="guardMiniHud" class="leaf-mini-hud" hidden>
+        <strong>JUST GUARD</strong>
+        <span>残り <b id="guardMiniTime">60.0</b> 秒</span>
+        <span>成功 <b id="guardMiniScore">0</b></span>
+        <span>ミス <b id="guardMiniMiss">0</b></span>
+      </div>
+      <div id="raceMiniHud" class="leaf-mini-hud" hidden>
+        <strong>WATER RACE</strong>
+        <span>TIME <b id="raceMiniTime">0.00</b></span>
+        <span>BEST <b id="raceMiniBest">--</b></span>
+      </div>
+      <div id="basketMiniHud" class="leaf-mini-hud" hidden>
+        <strong>WATER BASKET 1on1</strong>
+        <span>YOU <b id="basketPlayerScore">0</b></span>
+        <span>CPU <b id="basketEnemyScore">0</b></span>
+        <span>残り <b id="basketTime">60.0</b></span>
+      </div>
+      <div id="hud">
+        <div class="hp-wrap left">
+          <span>PLAYER</span>
+          <div class="hp"><i id="playerHp"></i></div>
+        </div>
+        <div id="comboText"></div>
+        <div id="storyHud" class="story-hud" hidden></div>
+        <div class="hp-wrap right">
+          <span>RIVAL</span>
+          <div class="hp"><i id="enemyHp"></i></div>
+        </div>
+      </div>
+
+      <div id="controls">
+        <div id="stickZone" class="stick-zone">
+          <div id="stickBase" class="stick-base">
+            <div id="stickKnob" class="stick-knob"></div>
+          </div>
+        </div>
+        <div class="buttons">
+          <button class="action punch" data-action="punch">パンチ</button>
+          <button class="action kick" data-action="kick">キック</button>
+          <button class="action tongue" data-action="tongue">舌</button>
+          <button class="action guard" data-action="guard">ガード</button>
+        </div>
+      </div>
+
+      <button id="practiceExitButton" class="practice-exit-btn" hidden>練習終了</button>
+      <button id="restartButton" class="restart-btn" hidden>もう一度</button>
+      <button id="titleReturnButton" class="restart-btn title-return-btn" hidden>選択画面に戻る</button>
+    </section>
+
+    <div id="portraitOverlay">
+      <div class="portrait-frog">🐸</div>
+      <strong>スマホを横持ちすると自動で始まります</strong>
+      <button id="portraitOverlayStart" class="soft-btn portrait-overlay-start">縦画面のまま始める</button>
+      <small class="portrait-overlay-note">横画面にできない端末はこちら</small>
+      <span class="portrait-version">VERSION 6.49</span>
+    </div>
+  </div>
+  <script src="water-game.js"></script>
+<a id="mixMapReturn" href="index.html" aria-label="MIXマップへ戻る">MIXマップへ</a>
+</body>
+</html>
