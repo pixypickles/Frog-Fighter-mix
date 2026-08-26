@@ -145,7 +145,9 @@
   }
 
   // Ground prototype standalone stays portrait, but MIX battle uses landscape.
-  let portraitPlayMode=!mixBattleMode;
+  // v0.31: MIXの地上練習も横画面レイアウトを使う。
+  // これまで mixPracticeMode が portrait 扱いになり、ボタン分離CSSが効いていなかった。
+  let portraitPlayMode=!(mixBattleMode || mixPracticeMode);
   if(portraitPlayMode) document.body.classList.add('portrait-play');
   else{
     document.body.classList.remove('portrait-play');
@@ -3540,7 +3542,8 @@
     f.attackT=.42;
 
     const speed=355;
-    const angles = source==='punch' ? [0,-24] : [38,90];
+    // v0.31: キック版は前方水平と約10°下へ飛ぶ2枚。
+    const angles = source==='punch' ? [0,-24] : [0,10];
     const yOffset=source==='punch' ? -10 : 24;
 
     angles.forEach((deg,i)=>{

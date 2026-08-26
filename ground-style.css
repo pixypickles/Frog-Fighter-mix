@@ -1880,3 +1880,19 @@ body.mix-ground-landscape .practice-help{
   left:50% !important;
   transform:translateX(-50%) !important;
 }
+
+/* v0.31: MIX地上戦・地上練習の4ボタンをさらに分離 */
+body.mix-ground-landscape .buttons{
+  right:1.2vw !important;
+  bottom:1.5vh !important;
+  width:min(52vw,520px) !important;
+  height:min(76vh,350px) !important;
+}
+body.mix-ground-landscape .action{
+  width:72px !important;
+  height:72px !important;
+}
+body.mix-ground-landscape .punch{right:22% !important;bottom:0% !important}
+body.mix-ground-landscape .kick{right:0% !important;bottom:31% !important}
+body.mix-ground-landscape .tongue{right:52% !important;bottom:31% !important}
+body.mix-ground-landscape .guard{right:25% !important;bottom:66% !important}

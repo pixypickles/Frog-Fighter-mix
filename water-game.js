@@ -3529,20 +3529,24 @@
     f.attackT=.42;
 
     const speed=350;
-    const rad=angleDeg*Math.PI/180;
     const yOffset=source==='punch' ? -10 : (source==='kick' ? 28 : 2);
+    // v0.31: キック版は前方水平＋約10°下の2枚。
+    const angles=source==='kick' ? [0,10] : [angleDeg];
 
-    pressureBlades.push({
-      owner:f,
-      x:f.x+f.face*68,
-      y:f.y+yOffset,
-      vx:f.face*Math.cos(rad)*speed,
-      vy:Math.sin(rad)*speed,
-      t:1.25,
-      life:1.25,
-      hit:false,
-      size:1.0,
-      angle:rad
+    angles.forEach((deg,i)=>{
+      const rad=deg*Math.PI/180;
+      pressureBlades.push({
+        owner:f,
+        x:f.x+f.face*(68+i*5),
+        y:f.y+yOffset,
+        vx:f.face*Math.cos(rad)*speed,
+        vy:Math.sin(rad)*speed,
+        t:1.25,
+        life:1.25,
+        hit:false,
+        size:1.0,
+        angle:rad
+      });
     });
 
     comboEl.textContent='水圧カッター!';
