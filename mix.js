@@ -150,6 +150,7 @@ function randomBeelTeam(){
 }
 
 let turn=1, side='kawazu', selected=null, cpuBusy=false, units=[];
+let traps={kawazu:{damage:null,stop:null},beel:{damage:null,stop:null}};
 
 function deploymentNodes(side,team){
   const home=side==='kawazu'?'K':'Z';
