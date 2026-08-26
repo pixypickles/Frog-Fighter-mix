@@ -9,7 +9,7 @@ const msg=document.getElementById('message'), turnLabel=document.getElementById(
 const kBases=document.getElementById('kBases'), bBases=document.getElementById('bBases');
 
 const nodes={
- K:{x:8,y:72,name:'カワズ本拠地',terrain:'land',base:true,owner:'kawazu',links:['A']},
+ K:{x:8,y:72,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A']},
  A:{x:22,y:63,name:'あぜ道',terrain:'land',base:false,owner:null,links:['K','B','S1']},
  S1:{x:20,y:37,name:'森の祠',terrain:'land',base:true,owner:null,links:['A']}, // 1つズレた行き止まり拠点
  B:{x:37,y:63,name:'中央広場',terrain:'land',base:true,owner:null,links:['A','C','P1']},
@@ -20,7 +20,7 @@ const nodes={
  P2:{x:59,y:34,name:'大きな池',terrain:'water',base:true,owner:null,links:['P1','D','P3']},
  P3:{x:78,y:31,name:'深み',terrain:'water',base:false,owner:null,links:['P2','E']},
  E:{x:80,y:57,name:'湿地道',terrain:'land',base:false,owner:null,links:['D','P3','Z']},
- Z:{x:92,y:67,name:'ベルゼブブ本拠地',terrain:'land',base:true,owner:'beel',links:['E']}
+ Z:{x:92,y:67,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['E']}
 };
 
 const roster={
@@ -43,7 +43,7 @@ let turn=1, side='kawazu', selected=null, cpuBusy=false, units=[];
 function freshUnits(){
  return [
   ...roster.kawazu.map((r,i)=>({id:'k'+i,side:'kawazu',name:r[0],icon:r[1],mobility:r[2],type:r[3],node:'K',hp:100,wait:0,moved:false})),
-  ...roster.beel.map((r,i)=>({id:'b'+i,side:'beel',name:r[0],icon:r[1],mobility:r[2],type:r[3],node:i>=3?'P3':'Z',hp:100,wait:0,moved:false}))
+  ...roster.beel.map((r,i)=>({id:'b'+i,side:'beel',name:r[0],icon:r[1],mobility:r[2],type:r[3],node:'Z',hp:100,wait:0,moved:false}))
  ];
 }
 function makeUnits(){ units=freshUnits(); }
@@ -86,6 +86,7 @@ function applyBattleResult(){
 }
 function canEnter(u,nid){
  const n=nodes[nid]; if(!n)return false;
+ if(n.terrain==='both') return true;
  if(u.mobility==='water'&&n.terrain!=='water')return false;
  if(u.mobility==='land'&&n.terrain!=='land')return false;
  return true;
@@ -112,7 +113,8 @@ function render(){
  Object.entries(nodes).forEach(([id,n])=>{
   const b=document.createElement('button');b.className='node '+n.terrain+(n.base?' base':'')+(n.owner?' '+n.owner+'-owned':'');
   b.style.left=n.x+'%';b.style.top=n.y+'%';b.dataset.node=id;
-  b.innerHTML='<b>'+n.name+'</b><small>'+(n.terrain==='water'?'💧 水中':'🌱 陸地')+(n.base?'・拠点':'')+'</small>';
+  const terrainLabel=n.terrain==='water'?'💧 水中':(n.terrain==='both'?'💧🌱 水陸両用':'🌱 陸地');
+  b.innerHTML='<b>'+n.name+'</b><small>'+terrainLabel+(n.base?'・拠点':'')+'</small>';
   if(side==='kawazu'&&selected&&nodes[selected.node].links.includes(id)&&canEnter(selected,id)&&!selected.moved&&!selected.wait){
    b.classList.add('reachable');b.onclick=()=>moveHuman(id);
    const line=document.querySelector('[data-road="'+roadKey(selected.node,id)+'"]');if(line)line.classList.add('active');
