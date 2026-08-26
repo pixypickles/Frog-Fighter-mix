@@ -2930,8 +2930,8 @@
     const startX=f.x+dir*35;
     const startY=f.y-6;
     const length=Math.max(innerWidth,innerHeight)*1.05;
-    const dx=dir*.90;
-    const dy=-.42;
+    const dx=dir*.866;
+    const dy=-.500;
 
     aquaTornadoes.push({
       owner:f,
@@ -3154,8 +3154,8 @@
     const startX=f.x+dir*28;
     const startY=f.y+42;
     const length=Math.max(innerWidth,innerHeight)*1.05;
-    const dx=dir*.90;
-    const dy=.42;
+    const dx=dir*.966;
+    const dy=.259;
 
     aquaTornadoes.push({
       owner:f,
@@ -3184,15 +3184,15 @@
     if(gameOver || f.stun>0 || f.guard || f.specialT>0 || f.attackT>0) return false;
 
     f.specialType='burningCyclone';
-    f.specialT=1.02;
+    f.specialT=1.12;
     f.attack='kick';
-    f.attackT=1.02;
+    f.attackT=1.12;
     f.cycloneLastHitA=-9999;
     f.cycloneLastHitB=-9999;
     f.cycloneStartTime=performance.now();
 
     // 高速回転しながら相手方向へ突進
-    f.vx+=f.face*510;
+    f.vx+=f.face*555;
     f.vy*=.18;
 
     comboEl.textContent='バーニングサイクロン!';
@@ -4662,7 +4662,7 @@
       const ang=burningCycloneAngle(f);
 
       // 突進速度を維持
-      if(Math.abs(f.vx)<350) f.vx+=f.face*220*dt;
+      if(Math.abs(f.vx)<390) f.vx+=f.face*255*dt;
 
       if(other){
         const feet=[
@@ -4675,12 +4675,12 @@
           const p=rotatePoint(foot.localX,foot.localY,ang);
           const wx=f.x+p.x, wy=f.y+p.y;
           if(
-            Math.hypot(other.x-wx,other.y-wy)<other.radius+22 &&
-            now-(f[foot.key]||-9999)>72
+            Math.hypot(other.x-wx,other.y-wy)<other.radius+25 &&
+            now-(f[foot.key]||-9999)>68
           ){
             f[foot.key]=now;
             // 超多段用の小ダメージ
-            damageHit(f,other,.62*f.damageMul,16*f.face,-2);
+            damageHit(f,other,.72*f.damageMul,18*f.face,-2);
           }
         });
       }
