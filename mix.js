@@ -1,4 +1,10 @@
 const board=document.getElementById('board'), roads=document.getElementById('roads');
+const mixScript=[...document.scripts].find(s=>/\/mix\.js(?:\?|$)/.test(s.src));
+const MIX_BASE_URL=mixScript ? new URL('./',mixScript.src) : new URL('./',location.href);
+function mixPageUrl(mode){
+  return new URL((mode==='water'?'water/':'ground/')+'index.html?mix=1&battle=1',MIX_BASE_URL).href;
+}
+
 const msg=document.getElementById('message'), turnLabel=document.getElementById('turnLabel'), sideLabel=document.getElementById('sideLabel');
 const kBases=document.getElementById('kBases'), bBases=document.getElementById('bBases');
 
@@ -152,7 +158,7 @@ function showRotateThenBattle(terrain,a,b,n){
  ov.classList.add('show');
  const ready=()=>portrait?(innerHeight>=innerWidth):(innerWidth>=innerHeight);
  let gone=false;
- const go=()=>{if(gone)return;gone=true;ov.classList.remove('show');location.href=(terrain==='water'?'water/':'ground/')+'index.html?mix=1&battle=1'};
+ const go=()=>{if(gone)return;gone=true;ov.classList.remove('show');location.href=mixPageUrl(terrain)};
  document.getElementById('mixBattleGo').onclick=go;
  const timer=setInterval(()=>{if(ready()){clearInterval(timer);setTimeout(go,300)}},250);
  setTimeout(()=>clearInterval(timer),12000);

@@ -2702,7 +2702,7 @@
     sessionStorage.removeItem('mixBattle');
     restartButton.textContent='戦略マップへ戻る';
     restartButton.hidden=false;
-    restartButton.onclick=()=>{ location.href='../index.html'; };
+    restartButton.onclick=()=>{ location.href=new URL('../index.html',location.href).href; };
     if(titleReturnButton)titleReturnButton.hidden=true;
     return true;
   }
