@@ -11,6 +11,11 @@ const kBases=document.getElementById('kBases'), bBases=document.getElementById('
 const mixTitle=document.getElementById('mixTitle');
 const mixMain=document.getElementById('mixMain');
 const mixResultOverlay=document.getElementById('mixResultOverlay');
+const hqTerrainOverlay=document.getElementById('hqTerrainOverlay');
+const hqTerrainText=document.getElementById('hqTerrainText');
+const hqLandChoice=document.getElementById('hqLandChoice');
+const hqWaterChoice=document.getElementById('hqWaterChoice');
+
 let mixDifficulty='normal';
 
 document.querySelectorAll('[data-difficulty]').forEach(btn=>{
@@ -184,7 +189,7 @@ function render(){
  Object.entries(nodes).forEach(([id,n])=>{
   const b=document.createElement('button');b.className='node '+n.terrain+(n.base?' base':'')+(n.owner?' '+n.owner+'-owned':'');
   b.style.left=n.x+'%';b.style.top=n.y+'%';b.dataset.node=id;
-  const terrainLabel=n.terrain==='water'?'💧 水中':(n.terrain==='both'?'💧🌱 水陸両用':'🌱 陸地');
+  const terrainLabel=n.terrain==='water'?'💧 水中':(n.terrain==='both'?'🛡️ 地上/水中選択':'🌱 陸地');
   const healLabel=n.base?' ❤️ 回復':'';
   b.innerHTML='<b>'+(n.base?'❤️ ':'')+n.name+'</b><small>'+terrainLabel+healLabel+'</small>';
   if(side==='kawazu'&&selected&&nodes[selected.node].links.includes(id)&&canEnter(selected,id)&&!selected.moved&&!selected.wait){
@@ -221,15 +226,64 @@ function selectUnit(u){
  if(u.moved){say(u.name,'このターンは移動済みです。');return}
  selected=u;say(u.name,'移動先を選択。');render();
 }
+function cpuChooseHqTerrain(attacker,defender){
+  // 防衛側ベルゼブブ軍の選択。
+  // EASYは攻撃側が入りやすい地形、HARDは入りにくい地形を少し優先。
+  const attackerMob=attacker.mobility||'both';
+  if(mixDifficulty==='easy'){
+    if(attackerMob==='water')return 'water';
+    if(attackerMob==='land')return 'land';
+    return Math.random()<.5?'land':'water';
+  }
+  if(mixDifficulty==='hard'){
+    if(attackerMob==='water')return 'land';
+    if(attackerMob==='land')return 'water';
+    return Math.random()<.5?'water':'land';
+  }
+  return Math.random()<.5?'land':'water';
+}
+
+function chooseHqTerrain(attacker,defender,to,done){
+  const n=nodes[to];
+  const isHq=(to==='K'||to==='Z');
+  const isLeaderFight=!!(defender&&defender.leader);
+  if(!isHq || !isLeaderFight){
+    done(n.terrain==='both'?'land':n.terrain);
+    return;
+  }
+
+  // カワズ本拠地を守るのはプレイヤーなので自分で選ぶ。
+  if(defender.side==='kawazu'){
+    hqTerrainText.textContent='カワズさんが本拠地を防衛！　地上と水中、どちらで迎え撃ちますか？';
+    hqTerrainOverlay.hidden=false;
+    const finish=(terrain)=>{
+      hqTerrainOverlay.hidden=true;
+      hqLandChoice.onclick=null;
+      hqWaterChoice.onclick=null;
+      done(terrain);
+    };
+    hqLandChoice.onclick=()=>finish('land');
+    hqWaterChoice.onclick=()=>finish('water');
+    return;
+  }
+
+  // ベルゼブブ本拠地ではCPU防衛側が選択。
+  const terrain=cpuChooseHqTerrain(attacker,defender);
+  say('ベルゼブブさんの防衛地形',terrain==='water'?'水中戦を選択！':'地上戦を選択！');
+  setTimeout(()=>done(terrain),650);
+}
+
 function encounter(attacker,defender,to){
- const n=nodes[to],terrain=n.terrain;
- saveStrategy();
- const battle={attacker:attacker.id,defender:defender.id,node:to,turn,side,terrain,
-  attackerType:attacker.type,defenderType:defender.type,attackerHp:attacker.hp,defenderHp:defender.hp,
-  attackerName:attacker.name,defenderName:defender.name};
- sessionStorage.setItem('mixBattle',JSON.stringify(battle));
- say('遭遇！',attacker.name+' VS '+defender.name+'　'+(terrain==='water'?'水中戦':'地上戦'));
- showRotateThenBattle(terrain,attacker,defender,n);
+ const n=nodes[to];
+ chooseHqTerrain(attacker,defender,to,(terrain)=>{
+   saveStrategy();
+   const battle={attacker:attacker.id,defender:defender.id,node:to,turn,side,terrain,
+    attackerType:attacker.type,defenderType:defender.type,attackerHp:attacker.hp,defenderHp:defender.hp,
+    attackerName:attacker.name,defenderName:defender.name};
+   sessionStorage.setItem('mixBattle',JSON.stringify(battle));
+   say('遭遇！',attacker.name+' VS '+defender.name+'　'+(terrain==='water'?'水中戦':'地上戦'));
+   showRotateThenBattle(terrain,attacker,defender,n);
+ });
 }
 function showRotateThenBattle(terrain,a,b,n){
  let ov=document.getElementById('mixRotateOverlay');if(!ov){ov=document.createElement('div');ov.id='mixRotateOverlay';document.body.appendChild(ov)}

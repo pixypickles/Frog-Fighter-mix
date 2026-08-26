@@ -99,14 +99,16 @@
   // Ground prototype physics. Up/down input remains available for command recognition,
   // but movement itself is horizontal + gravity. Landing immediately triggers a frog jump.
   const LAND_GRAVITY = 1200;
-  const LAND_AUTO_JUMP_SPEED = 880;
+  const LAND_AUTO_JUMP_SPEED = 640;
   const LAND_HORIZONTAL_DRAG = .22;
 
   // Ground prototype 0.4: lower the soil again so the tall sky stays dominant.
   // The guard button may protrude slightly above the soil; drawing and collision
   // still share the exact same ground line.
   function landGroundDepth(){
-    if(innerWidth>innerHeight) return Math.min(105,Math.max(68,innerHeight*.14));
+    // MIX横画面では土を画面最下部へ寄せる。
+    // 以前より空中スペースを広くしつつ、ジャンプも低く抑える。
+    if(innerWidth>innerHeight) return Math.min(58,Math.max(38,innerHeight*.075));
     return Math.min(235, Math.max(145, innerHeight * .155));
   }
   function landGroundTop(){

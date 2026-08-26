@@ -196,3 +196,25 @@
   margin-top:13px;border:2px solid #fff;border-radius:999px;padding:11px 22px;
   background:#ffffff1b;color:#fff;font-weight:1000;
 }
+
+/* v0.13 本拠地防衛側の地形選択 */
+.hq-terrain-overlay{
+  position:fixed;inset:0;z-index:190000;display:grid;place-items:center;
+  background:rgba(2,18,22,.94);padding:20px;text-align:center;
+}
+.hq-terrain-overlay[hidden]{display:none !important}
+.hq-terrain-card{
+  width:min(420px,94vw);padding:26px 20px;border-radius:25px;
+  background:#174540;border:2px solid #ffffff66;box-shadow:0 20px 60px #000b;
+}
+.hq-shield{font-size:52px}
+.hq-terrain-card h2{margin:5px 0 9px}
+.hq-terrain-card p{margin:0 0 13px;font-size:13px}
+.hq-terrain-buttons{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hq-terrain-buttons button{
+  border:2px solid #fff9;border-radius:16px;padding:14px 8px;
+  color:#fff;font-weight:1000;font-size:16px;background:#ffffff1b;
+}
+#hqLandChoice{background:#557a35}
+#hqWaterChoice{background:#176f89}
+.hq-terrain-card small{display:block;margin-top:11px;font-size:10px;opacity:.72}
