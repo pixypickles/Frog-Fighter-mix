@@ -43,6 +43,11 @@
 
   let selectedFighter = 'green';
   let selectedOpponent = 'blue';
+  // MIX戦闘連携
+  const mixBattleMode=new URLSearchParams(location.search).get('mix')==='1' && new URLSearchParams(location.search).get('battle')==='1';
+  let mixBattleContext=null;
+  try{ if(mixBattleMode) mixBattleContext=JSON.parse(sessionStorage.getItem('mixBattle')||'null'); }catch(e){}
+
   let difficulty='normal';
   try{
     const savedDifficulty=localStorage.getItem('kaeru_difficulty');
@@ -2668,6 +2673,40 @@
     practiceHelp.style.display='block';
   }
 
+  function mixTypeFor(nameOrType){
+    if(!nameOrType)return null;
+    const map={
+      'カワズ':'kawazu','カワズさん':'kawazu',
+      'ミカエル':'green','ミカエルさん':'green','ガブリエル':'blue','ガブリエルさん':'blue',
+      'ルシファー':'black','ルシファーさん':'black','リリス':'purple','リリスさん':'purple',
+      'ラファエル':'yellow','ラファエルさん':'yellow','ウリエル':'orange','ウリエルさん':'orange',
+      'ベルゼブブ':'beelzebub','ベルゼブブさん':'beelzebub',
+      'リヴァイア':'piranha','リヴァイアさん':'piranha','アスモデウス':'crayfish','アスモデウスさん':'crayfish',
+      'アザゼル':'piranha','アザゼルさん':'piranha','ベリアル':'crayfish','ベリアルさん':'crayfish'
+    };
+    return map[nameOrType]||nameOrType;
+  }
+
+  function finishMixBattle(playerWon){
+    if(!mixBattleMode||!mixBattleContext)return false;
+    const playerWasAttacker=mixBattleContext.playerRole!=='defender';
+    const attackerWon=playerWasAttacker?playerWon:!playerWon;
+    const result={
+      attacker:mixBattleContext.attacker,defender:mixBattleContext.defender,node:mixBattleContext.node,
+      attackerHp:playerWasAttacker?player.hp:enemy.hp,
+      defenderHp:playerWasAttacker?enemy.hp:player.hp,
+      winner:attackerWon?'attacker':'defender',
+      returnSide:'kawazu'
+    };
+    sessionStorage.setItem('mixBattleResult',JSON.stringify(result));
+    sessionStorage.removeItem('mixBattle');
+    restartButton.textContent='戦略マップへ戻る';
+    restartButton.hidden=false;
+    restartButton.onclick=()=>{ location.href='../index.html'; };
+    if(titleReturnButton)titleReturnButton.hidden=true;
+    return true;
+  }
+
   function fighterDisplayName(type){
     return {
       green:'ミカエルさん', blue:'ガブリエルさん', black:'ルシファーさん',
@@ -4369,6 +4408,12 @@
       defeated.tongueT=0;
       defeated.specialT=0;
       defeated.specialType=null;
+    }
+
+    if(mixBattleMode){
+      finishMixBattle(playerWon);
+      comboEl.textContent=playerWon?'YOU WIN!':'YOU LOSE';
+      return;
     }
 
     if(gameMode==='story'){
@@ -6104,4 +6149,22 @@ toxicWaters.forEach(v=>{
 
   resize();
   requestAnimationFrame(loop);
+
+  // MIXから呼ばれた場合はキャラ選択を飛ばして遭遇戦を開始。
+  if(mixBattleMode && mixBattleContext){
+    setTimeout(()=>{
+      const attackerIsKawazu=String(mixBattleContext.attacker||'').startsWith('k');
+      mixBattleContext.playerRole=attackerIsKawazu?'attacker':'defender';
+      const pType=mixTypeFor(attackerIsKawazu?mixBattleContext.attackerType:mixBattleContext.defenderType);
+      const eType=mixTypeFor(attackerIsKawazu?mixBattleContext.defenderType:mixBattleContext.attackerType);
+      selectedFighter=pType||'green';
+      selectedOpponent=eType||'black';
+      show('game');resize();startGame('free',selectedOpponent);
+      if(player)player.hp=Math.max(1,attackerIsKawazu?mixBattleContext.attackerHp:mixBattleContext.defenderHp);
+      if(enemy)enemy.hp=Math.max(1,attackerIsKawazu?mixBattleContext.defenderHp:mixBattleContext.attackerHp);
+      updateHud();
+      if(practiceExitButton)practiceExitButton.hidden=true;
+      if(mixMapReturn)mixMapReturn.style.display='none';
+    },80);
+  }
 })();
