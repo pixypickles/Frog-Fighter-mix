@@ -67,6 +67,7 @@
   let guardWaves = [];
   let aquaTornadoes = [];
   let aquaVortices = [];
+  let michaelAuraShots = [];
   let toxicWaters=[];
   let bossFish=[];
   let abyssShocks=[];
@@ -310,11 +311,11 @@
     green:[
       'バーニングアッパー：↑ ＋ パンチ',
       'バーニングキック：前 ＋ キック',
-      'バーニングサイクロン：↓ → 後ろ ＋ キック'
+      'バーニングサイクロン：↓ → 後ろ ＋ キック<br>レッドオーラ：↓ → 後ろ ＋ ガード'
     ],
     blue:[
-      'アクアトルネード：後ろ ＋ パンチ',
-      'アクアストリーム：後ろ ＋ キック',
+      'アクアトルネード：ガード → パンチ',
+      'アクアストリーム：ガード → キック',
       'アクアボルテックス：前 ＋ パンチ'
     ],
     black:[
@@ -792,6 +793,9 @@
       this.tackleHit=false;
       this.urielGuardHoldStart=0;
       this.urielAuraT=0;
+      this.michaelRedAuraT=0;
+      this.michaelPowerReady=false;
+      this.michaelBoostAttackT=0;
       this.lilithSpinStartTime=0;
       this.lilithSpinLastHitA=-9999;
       this.lilithSpinLastHitB=-9999;
@@ -856,6 +860,16 @@
       if(this.tackleArmedT>0) this.tackleArmedT-=dt;
       if(this.bossSpecialCooldown>0) this.bossSpecialCooldown=Math.max(0,this.bossSpecialCooldown-dt);
       if(this.urielAuraT>0) this.urielAuraT=Math.max(0,this.urielAuraT-dt);
+      if(this.type==='orange' && this.urielAuraT>0){
+        this.hp=Math.min(100,this.hp+1.15*dt);
+        if(this.isPlayer)updateHud();
+      }
+      if(this.michaelRedAuraT>0){
+        this.michaelRedAuraT=Math.max(0,this.michaelRedAuraT-dt);
+        this.hp=Math.min(100,this.hp+1.7*dt);
+        if(this.isPlayer)updateHud();
+      }
+      if(this.michaelBoostAttackT>0)this.michaelBoostAttackT=Math.max(0,this.michaelBoostAttackT-dt);
       if (this.flash>0) this.flash-=dt;
       if (this.hurtFaceT>0) this.hurtFaceT-=dt;
       if (this.guardStartT>0) this.guardStartT-=dt;
@@ -1822,6 +1836,12 @@
         ctx.restore();
       }
 
+      if(this.type==='green' && this.michaelRedAuraT>0){
+        ctx.save();ctx.globalCompositeOperation='lighter';ctx.strokeStyle='#ff3025';ctx.lineWidth=5;
+        ctx.globalAlpha=.42+.14*Math.sin(performance.now()/75);ctx.shadowColor='#ff2718';ctx.shadowBlur=18;
+        ctx.beginPath();ctx.ellipse(0,18,49,64,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+      }
+
       if(this.type==='beelzebub'){
         // 黒い身体に蛍光グリーンの目・輪郭が浮くラスボス演出
         ctx.save();
@@ -2638,7 +2658,7 @@
         'スティック1回転 ＋ ガード：ホワイトカウンター',
         '← → ＋ ガード：ガーディアンタックル',
         'ガード長押し→離す：ホワイトオーラ（長押し時間に応じて維持）',
-        'ホワイトオーラ中 パンチ／キック：白いリーチ約3倍攻撃'
+        'ホワイトオーラ中：少しずつHP回復＋白いリーチ約3倍攻撃'
       ],
       piranha:[
         '舌×3：追尾連続噛みつき',
@@ -3913,6 +3933,30 @@
     clearCommand();return true;
   }
 
+  function specialMichaelRedAura(f){
+    if(gameOver || !f || f.type!=='green' || f.stun>0 || f.specialT>0) return false;
+    f.guard=false; f.specialType='michaelRedAura'; f.specialT=.42;
+    f.michaelRedAuraT=3.0; f.michaelPowerReady=true;
+    f.hp=Math.min(100,f.hp+3.0);
+    if(f.isPlayer)updateHud();
+    comboEl.textContent='レッドオーラ!';
+    setTimeout(()=>{if(comboEl.textContent==='レッドオーラ!')comboEl.textContent='';},720);
+    clearCommand(); return true;
+  }
+
+  function consumeMichaelPower(f,kind){
+    if(!f || f.type!=='green' || !f.michaelPowerReady)return false;
+    f.michaelPowerReady=false; f.michaelBoostAttackT=1.45;
+    if(kind==='punch'||kind==='kick'){
+      michaelAuraShots.push({
+        owner:f,x:f.x+f.face*42,y:f.y+(kind==='punch'?-4:28),
+        vx:f.face*(kind==='punch'?520:470),vy:0,
+        r:kind==='punch'?11:13,t:.9,life:.9,hit:false
+      });
+    }
+    return true;
+  }
+
   function trySpecial(f,kind){
     if(!f) return false;
     const forward=f.face>0?'right':'left';
@@ -3955,19 +3999,17 @@
       }
     }
 
-    // ガブリエル：後ろ＋パンチ / 後ろ＋キック / 前＋パンチ。
+    // ガブリエル：ガード→パンチ＝上水流、ガード→キック＝下水流、前＋パンチ＝ボルテックス。
     if(f.type==='blue'){
+      const justGuarded=performance.now()-(input.lastSimpleGuardTapTime||0)<=650;
+      if(kind==='punch' && justGuarded){
+        input.lastSimpleGuardTapTime=0; clearCommand(); return specialAquaTornado(f);
+      }
+      if(kind==='kick' && justGuarded){
+        input.lastSimpleGuardTapTime=0; clearCommand(); return specialAquaStream(f);
+      }
       if(kind==='punch' && hasCommand([forward],520)){
-        clearCommand();
-        return specialAquaVortex(f);
-      }
-      if(kind==='punch' && hasCommand([back],520)){
-        clearCommand();
-        return specialAquaTornado(f);
-      }
-      if(kind==='kick' && hasCommand([back],520)){
-        clearCommand();
-        return specialAquaStream(f);
+        clearCommand(); return specialAquaVortex(f);
       }
     }
 
@@ -4065,6 +4107,9 @@
     }
 
     if(gameOver || f.guard) return;
+    if(f.type==='green' && f.michaelPowerReady && (kind==='punch'||kind==='kick')){
+      consumeMichaelPower(f,kind);
+    }
     if(f.webbedT>0){
       f.webMash=(f.webMash||0)+1;
       f.webbedT=Math.max(0,f.webbedT-.13);
@@ -4343,6 +4388,7 @@
   }
 
   function damageHit(attacker,target,dmg,kx,ky,bypassCounter=false){
+    if(attacker&&attacker.type==='green'&&attacker.michaelBoostAttackT>0)damage*=1.35;
     if(target && target.webbedT>0){
       target.webbedT=0; target.webMash=0;
       spawnImpact(target.x,target.y,'guard');
@@ -4519,6 +4565,15 @@
           input.simpleGuardTapTimes=(input.simpleGuardTapTimes||[]).filter(t=>simpleNow-t<=650);
           input.simpleGuardTapTimes.push(simpleNow);
           input.lastSimpleGuardTapTime=simpleNow;
+
+          // ミカエル：下→後ろ＋ガードでレッドオーラ。
+          if(player.type==='green' && !player.throwState){
+            const back=player.face>0?'left':'right';
+            if(hasCommand(['down',back],720)){
+              input.simpleGuardTapTimes=[];
+              if(specialMichaelRedAura(player)){btn.classList.remove('pressed');return;}
+            }
+          }
 
           // ラファエル：上＋ガードで高速バブル移動 / エアブースト。
           if(player.type==='yellow' && !player.throwState && input.y<-.35){
@@ -5123,6 +5178,11 @@ function drawBackground(dt){
       // ガブリエルさんの長い水流は貫通系なので対象外。
       cancelSoftProjectilesByAura();
 
+      michaelAuraShots.forEach(s=>{
+        ctx.save();ctx.globalCompositeOperation='lighter';
+        ctx.fillStyle='rgba(255,55,35,.85)';ctx.shadowColor='#ff2a18';ctx.shadowBlur=16;
+        ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();ctx.restore();
+      });
       aquaVortices.forEach(v=>{
         v.t-=dt;
         v.spin+=dt*8.5;
@@ -5141,11 +5201,24 @@ function drawBackground(dt){
               v.owner._projectileHit=true;
               damageHit(v.owner,target,1.15*v.owner.damageMul,26*v.owner.face,-8);
               v.owner._projectileHit=false;
+              v.owner.hp=Math.min(100,v.owner.hp+.42);
+              if(v.owner.isPlayer)updateHud();
             }
           }
         }
       });
       aquaVortices=aquaVortices.filter(v=>v.t>0);
+      michaelAuraShots.forEach(s=>{
+        s.t-=dt;s.x+=s.vx*dt;s.y+=s.vy*dt;
+        const target=s.owner&&s.owner.isPlayer?enemy:player;
+        if(target&&!s.hit&&Math.hypot(target.x-s.x,target.y-s.y)<target.radius+s.r+8){
+          s.hit=true;s.t=0;s.owner._projectileHit=true;
+          damageHit(s.owner,target,3.4*s.owner.damageMul,95*s.owner.face,-8);
+          s.owner._projectileHit=false;spawnImpact(s.x,s.y,'hit');
+        }
+      });
+      michaelAuraShots=michaelAuraShots.filter(s=>s.t>0&&s.x>-80&&s.x<innerWidth+80);
+
 
       toxicWaters.forEach(v=>{
         v.t-=dt;
