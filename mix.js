@@ -66,17 +66,25 @@ const MAP_DEFS={
   name:'三つ池の攻防',
   nodes:{
    K:{x:8,y:68,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','W1']},
+
    A:{x:22,y:65,name:'西草地',terrain:'land',base:false,owner:null,links:['K','B','P1']},
    B:{x:39,y:72,name:'畑の広場',terrain:'land',base:true,owner:null,links:['A','C','P2','S1']},
    S1:{x:35,y:90,name:'石の祠',terrain:'land',base:true,owner:null,links:['B']},
    C:{x:57,y:68,name:'土手道',terrain:'land',base:false,owner:null,links:['B','D','P2']},
-   D:{x:75,y:65,name:'東草地',terrain:'land',base:true,owner:null,links:['C','Z','P3']},
+   D:{x:73,y:65,name:'東草地',terrain:'land',base:true,owner:null,links:['C','W3','P3']},
+
    W1:{x:18,y:35,name:'西水路',terrain:'water',base:false,owner:null,links:['K','P1']},
    P1:{x:35,y:31,name:'蓮の池',terrain:'water',base:true,owner:null,links:['W1','P2','A']},
    P2:{x:54,y:34,name:'中央池',terrain:'water',base:true,owner:null,links:['P1','P3','B','C']},
    P3:{x:73,y:31,name:'葦の池',terrain:'water',base:true,owner:null,links:['P2','W2','D']},
-   W2:{x:86,y:36,name:'東水路',terrain:'water',base:false,owner:null,links:['P3','Z']},
-   Z:{x:92,y:68,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['D','W2']}
+
+   // 旧・敵本拠地側の下ルートも水に変更。
+   W3:{x:87,y:68,name:'東の浅瀬',terrain:'water',base:false,owner:null,links:['D','Z']},
+   W2:{x:86,y:38,name:'東水路',terrain:'water',base:false,owner:null,links:['P3','Z']},
+
+   // ベルゼブブ本拠地を上側へ移動。
+   // 陸地主ルートから攻めても、最後に必ず W3 の水マスを通る。
+   Z:{x:92,y:17,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['W2','W3']}
   }
  },
  map3:{
@@ -174,7 +182,11 @@ function freshUnits(){
  const enemyTeam=randomBeelTeam();
  return [
   ...roster.kawazu.map((r,i)=>({id:'k'+i,side:'kawazu',name:r[0],icon:r[1],mobility:r[2],type:r[3],node:'K',hp:100,wait:0,moved:false,leader:i===0,defeats:0,engineer:r[0]==='パスカル'})),
-  ...enemyTeam.map((r,i)=>({id:'b'+i,side:'beel',name:r[0],icon:r[1],mobility:r[2],type:r[3],node:'Z',hp:100,wait:0,moved:false,leader:i===0,defeats:0,engineer:r[0]==='マルファス'}))
+  ...enemyTeam.map((r,i)=>({
+   id:'b'+i,side:'beel',name:r[0],icon:r[1],mobility:r[2],type:r[3],
+   node:(selectedMap==='map2' && i>0 && r[2]==='land')?'D':'Z',
+   hp:100,wait:0,moved:false,leader:i===0,defeats:0,engineer:r[0]==='マルファス'
+  }))
  ];
 }
 function makeUnits(){ units=freshUnits(); }
