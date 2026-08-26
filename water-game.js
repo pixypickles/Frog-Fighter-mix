@@ -2930,8 +2930,8 @@
     const startX=f.x+dir*35;
     const startY=f.y-6;
     const length=Math.max(innerWidth,innerHeight)*1.05;
-    const dx=dir*.866;
-    const dy=-.500;
+    const dx=dir*.966;
+    const dy=-.259;
 
     aquaTornadoes.push({
       owner:f,
@@ -3154,8 +3154,8 @@
     const startX=f.x+dir*28;
     const startY=f.y+42;
     const length=Math.max(innerWidth,innerHeight)*1.05;
-    const dx=dir*.966;
-    const dy=.259;
+    const dx=dir*.990;
+    const dy=.139;
 
     aquaTornadoes.push({
       owner:f,
