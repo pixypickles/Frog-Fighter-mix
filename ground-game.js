@@ -329,7 +329,7 @@
     ],
     purple:[
       'リボンラッシュ：舌 ×3',
-      'カマキリ突進：後ろ ＋ ガード ×2',
+      'ゲンゴロウ突進：後ろ ＋ ガード ×2',
       'バックスピンキック：後ろ ＋ キック（追加入力で追加回転）'
     ],
     yellow:[
@@ -3010,29 +3010,29 @@
     const other=f.isPlayer?enemy:player;
     if(!other) return false;
     f.specialType='catfishCall'; f.specialT=.65; f.attackT=.30;
-    // 地上版：リリスさんの背後側・画面最上部から出現し、
-    // カマと羽根を大きく広げた縦長姿勢のまま対角線へ急降下する。
+    // 地上・浅瀬版：リリスさんの背後側からゲンゴロウが出現し、
+    // 地面／水面すれすれを前方へ突進する。
     const attackDir=f.face;
     const behindX=f.x-attackDir*78;
     const spawnX=Math.max(54,Math.min(innerWidth-54,behindX));
     const targetX=Math.max(50,Math.min(innerWidth-50,other.x));
-    const targetY=Math.max(innerHeight*.48,Math.min(groundY()-42,other.y+32));
-    const dx=(targetX-spawnX)+attackDir*180, dy=Math.max(120,targetY-44);
+    const targetY=Math.max(70,Math.min(groundY()-34,other.y+18));
+    const dx=(targetX-spawnX)+attackDir*190, dy=targetY-(groundY()-38);
     const len=Math.hypot(dx,dy)||1;
-    const speed=540;
+    const speed=560;
 
     catfishCharges.push({
       owner:f,
       target:other,
       x:spawnX,
-      y:44,
+      y:groundY()-38,
       vx:dx/len*speed,
       vy:dy/len*speed,
       t:1.65,
       hit:false
     });
-    comboEl.textContent='カマキリ突進!';
-    setTimeout(()=>{if(comboEl.textContent==='カマキリ突進!')comboEl.textContent='';},800);
+    comboEl.textContent='ゲンゴロウ突進!';
+    setTimeout(()=>{if(comboEl.textContent==='ゲンゴロウ突進!')comboEl.textContent='';},800);
     return true;
   }
 
@@ -6059,36 +6059,26 @@ toxicWaters.forEach(v=>{
       ctx.restore();
     });
 
-    // リリスさんの召喚：カマと羽根を広げた縦長カマキリが上空から急降下。
+    // リリスさんの召喚：ゲンゴロウ。水陸どちらでも自然に突進できる低いシルエット。
     catfishCharges.forEach(n=>{
       ctx.save();ctx.translate(n.x,n.y);
-      const diveAngle=Math.atan2(n.vy||1,n.vx||0)-Math.PI/2;
-      ctx.rotate(diveAngle);
-      // 半透明の左右の羽根
-      ctx.fillStyle='rgba(205,245,170,.58)';
-      ctx.beginPath();ctx.ellipse(-22,-6,18,43,-.38,0,Math.PI*2);ctx.fill();
-      ctx.beginPath();ctx.ellipse(22,-6,18,43,.38,0,Math.PI*2);ctx.fill();
-      // 縦長の胴体
-      ctx.fillStyle='#76a936';ctx.beginPath();ctx.ellipse(0,12,13,47,0,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#8fc748';ctx.beginPath();ctx.ellipse(0,-35,18,17,0,0,Math.PI*2);ctx.fill();
-      // 大きく左右へ開いた鎌
-      ctx.strokeStyle='#5f922c';ctx.lineWidth=8;ctx.lineCap='round';
-      ctx.beginPath();
-      ctx.moveTo(-8,-25);ctx.lineTo(-37,-53);ctx.lineTo(-54,-35);
-      ctx.moveTo(8,-25);ctx.lineTo(37,-53);ctx.lineTo(54,-35);
-      ctx.stroke();
-      // 脚も縦シルエットを崩さない程度に展開
-      ctx.strokeStyle='#4b7d2a';ctx.lineWidth=5;
-      ctx.beginPath();
-      ctx.moveTo(-8,4);ctx.lineTo(-31,23);ctx.lineTo(-39,42);
-      ctx.moveTo(8,4);ctx.lineTo(31,23);ctx.lineTo(39,42);
-      ctx.moveTo(-7,25);ctx.lineTo(-25,48);
-      ctx.moveTo(7,25);ctx.lineTo(25,48);
-      ctx.stroke();
-      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(-7,-39,4.5,0,Math.PI*2);ctx.arc(7,-39,4.5,0,Math.PI*2);ctx.fill();
-      ctx.fillStyle='#111';ctx.beginPath();ctx.arc(-7,-40,2.2,0,Math.PI*2);ctx.arc(7,-40,2.2,0,Math.PI*2);ctx.fill();
+      const ang=Math.atan2(n.vy||0,n.vx||1);
+      ctx.rotate(ang);
+      // 後脚（水かき）
+      ctx.strokeStyle='#2e3926';ctx.lineWidth=5;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(-16,8);ctx.lineTo(-35,20);ctx.lineTo(-48,15);ctx.moveTo(-16,-8);ctx.lineTo(-35,-20);ctx.lineTo(-48,-15);ctx.stroke();
+      // 楕円形の黒褐色ボディ
+      ctx.fillStyle='#263126';ctx.beginPath();ctx.ellipse(0,0,34,19,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#48583b';ctx.beginPath();ctx.ellipse(4,-2,27,13,0,0,Math.PI*2);ctx.fill();
+      // 背中の左右の翅線
+      ctx.strokeStyle='rgba(185,207,118,.72)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-18,0);ctx.lineTo(27,0);ctx.stroke();
+      // 頭と目
+      ctx.fillStyle='#20291f';ctx.beginPath();ctx.ellipse(29,0,12,14,0,0,Math.PI*2);ctx.fill();
+      ctx.fillStyle='#d8e79b';ctx.beginPath();ctx.arc(34,-6,2.8,0,Math.PI*2);ctx.arc(34,6,2.8,0,Math.PI*2);ctx.fill();
+      // 前脚
+      ctx.strokeStyle='#34422e';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(19,-9);ctx.lineTo(31,-20);ctx.moveTo(19,9);ctx.lineTo(31,20);ctx.stroke();
       ctx.restore();
-    });
+    });;
 
     // 水底の土煙も描画フェーズへ移動
     ceilingWebs.forEach(w=>{
