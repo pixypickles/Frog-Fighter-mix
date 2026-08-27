@@ -400,7 +400,7 @@ function applyBattleResult(){
     return true;
   }
 
-  // 通常キャラ：倒されるたびに復活待ちが 2→3→4… と増える。
+  // 通常キャラ：初回5ターン、以後6→7…と復活待ちが増える。
   loser.defeats=(loser.defeats||0)+1;
   const home=loser.side==='kawazu'?'K':'Z';
   loser.node=home;
@@ -409,8 +409,37 @@ function applyBattleResult(){
   // 工作兵は何度倒されても常に1ターン。通常キャラは従来どおり加算。
   loser.wait=loser.engineer?1:(4+loser.defeats);
   loser.moved=true;
+
+  // v0.46 本拠地連戦：
+  // 攻め込んだ側が護衛戦に勝ち、本拠地に残っている限りターンを終えず次の防衛者と連戦する。
+  // HPはもちろん前戦の残量をそのまま引き継ぐ。総大将は護衛がいなくなってから戦う。
+  const enemyHq=(winner.side==='kawazu'?'Z':'K');
+  const continuingSiege=(winner===a && battleNode===enemyHq && winner.hp>0);
+  const remaining=continuingSiege
+    ? units.filter(x=>x.side!==winner.side && x.node===battleNode && !x.wait && x.hp>0 && x.id!==loser.id)
+    : [];
+
   side=result.returnSide||'kawazu';
   saveStrategy();
+
+  if(continuingSiege && remaining.length){
+    render();
+    setTimeout(()=>{
+      const startNext=(next)=>{
+        if(!next)return;
+        say('本拠地連戦！',winner.name+'はHP '+Math.ceil(winner.hp)+'のまま、続けて'+next.name+'と戦います。');
+        setTimeout(()=>encounter(winner,next,battleNode),320);
+      };
+      // プレイヤー側の攻城なら次の相手を選択可能。CPU攻城はCPUが防衛者を選ぶ。
+      if(winner.side==='kawazu'){
+        chooseDefenderForHuman(winner,battleNode,remaining,startNext);
+      }else{
+        startNext(chooseDefenderForCpu(remaining,battleNode));
+      }
+    },140);
+    return true;
+  }
+
   setTimeout(()=>{
     say('戦闘結果',winner.name+'の勝ち！　'+loser.name+'は本拠地で'+loser.wait+'ターン回復待ち。');
     updateTurnButton();
