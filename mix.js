@@ -163,6 +163,18 @@ document.getElementById('mixResultRestart').onclick=()=>{
   location.href=location.pathname;
 };
 
+document.getElementById('mixResultMapSelect').onclick=()=>{
+  // クリア済みの開放状態(localStorage)は残し、戦略セッションだけリセット。
+  sessionStorage.removeItem('mixStrategyState');
+  sessionStorage.removeItem('mixBattleResult');
+  sessionStorage.removeItem('mixBattle');
+  mixResultOverlay.hidden=true;
+  mixMain.hidden=true;
+  mixTitle.hidden=true;
+  refreshMapLocks();
+  mapSelectOverlay.hidden=false;
+};
+
 
 const MAP_DEFS={
  map1:{

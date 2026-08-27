@@ -418,3 +418,36 @@
     #35a8bd !important;
   border-color:#b8f0dd !important;
 }
+
+/* v0.43: 勝敗画面の戻る導線を常に見えるように */
+.result-card{
+  max-height:calc(100svh - 24px);
+  overflow:auto;
+  box-sizing:border-box;
+}
+.mix-result-actions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+  margin-top:13px;
+  position:sticky;
+  bottom:0;
+  padding-top:8px;
+  background:linear-gradient(transparent,#174540 28%);
+}
+.mix-result-actions button{
+  margin-top:0 !important;
+  min-height:44px;
+}
+#mixResultMapSelect{
+  background:#f2cf48 !important;
+  color:#392f08 !important;
+  border-color:#fff0a0 !important;
+}
+@media(max-height:520px){
+  .mix-result-overlay{padding:8px}
+  .result-card{padding:14px 16px}
+  .result-icon{font-size:44px}
+  .result-card h2{font-size:26px}
+  .result-card p{line-height:1.4;margin:6px 0}
+}
