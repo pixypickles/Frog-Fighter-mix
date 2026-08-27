@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b6f7a" />
+  <title>フロッグファイタージャンプ</title>
+  <link rel="stylesheet" href="shallow-style.css" />
+</head>
+<body>
+  <div id="app">
+    <section id="titleScreen" class="screen active">
+      <div class="bubble b1"></div><div class="bubble b2"></div><div class="bubble b3"></div>
+      <div class="title-frog" aria-hidden="true">🐸</div>
+      <h1>フロッグファイタージャンプ</h1>
+      <p class="subtitle">浅瀬でいちばん強いヤツを決めろ！</p>
+      <p class="rotate-note">スマホ縦持ち専用・浅瀬バトル試作版</p>
+      <div class="start-version">FROG FIGHTER JUMP / v2.5</div>
+      <div class="title-start-actions">
+        <button id="portraitStart" class="soft-btn portrait-start-btn">はじめる</button>
+        <button id="desktopStart" class="soft-btn" hidden>はじめる</button>
+      </div>
+      <p class="portrait-start-note">着地すると自動で高くジャンプします</p>
+    </section>
+
+    <section id="selectScreen" class="screen">
+      <h2>ファイターをえらぶ</h2>
+      <div class="version-badge">FROG FIGHTER JUMP / v2.5</div>
+      <div class="fighter-grid">
+        <button class="fighter-card selected" data-fighter="green">
+          <span class="fighter-emoji" style="--frog-body:#35d851;--frog-eye-bump:#69e86e;--frog-iris:#173126;--frog-mouth:#146030;--frog-cheek:#d7b774;position:absolute;left:18px;top:50%;transform:translateY(-50%);--frog-eye-area:#ffffff;">🐸</span>
+          <strong>ミカエルさん</strong>
+        
+          <span class="special-hint move-names">バーニングアッパー / バーニングキック / バーニングサイクロン</span>
+        </button>
+        <button class="fighter-card" data-fighter="blue">
+          <span class="fighter-emoji blue-frog" style="--frog-body:#35bde6;--frog-eye-bump:#63d9f5;--frog-iris:#15362f;--frog-mouth:#0d6547;--frog-cheek:#89c6b4;position:absolute;left:18px;top:50%;transform:translateY(-50%);--frog-eye-area:#ffffff;">🐸</span>
+          <strong>ガブリエルさん</strong>
+        
+          <span class="special-hint move-names">アクアトルネード / アクアストリーム / アクアボルテックス</span>
+        </button>
+        <button class="fighter-card" data-fighter="black">
+          <span class="fighter-emoji black-frog" style="--frog-body:#3b3e47;--frog-eye-bump:#50545f;--frog-iris:#101010;--frog-mouth:#183024;--frog-cheek:#a75e70;position:absolute;left:18px;top:50%;transform:translateY(-50%);--frog-eye-area:#ffffff;">🐸</span>
+          <strong>ルシファーさん</strong>
+        
+          <span class="special-hint move-names">ヘルクラッシュ / アビスチャージ</span>
+        </button>
+        <button class="fighter-card" data-fighter="purple">
+          <span class="fighter-emoji purple-frog" style="--frog-body:#9850c8;--frog-eye-bump:#ad65dc;--frog-iris:#14312b;--frog-mouth:#275a37;--frog-cheek:#db64ad;position:absolute;left:18px;top:50%;transform:translateY(-50%);--frog-eye-area:#ffffff;">🐸</span>
+          <strong>リリスさん</strong>
+        
+          <span class="special-hint move-names">リボンラッシュ / カマキリ突進 / バックスピンキック</span>
+        </button>
+        <button class="fighter-card" data-fighter="yellow">
+          <span class="fighter-emoji yellow-frog" style="--frog-body:#e3cf42;--frog-eye-bump:#f2df66;--frog-iris:#26351c;--frog-mouth:#557528;--frog-cheek:#e9a761;position:absolute;left:18px;top:50%;transform:translateY(-50%);--frog-eye-area:#ffffff;">🐸</span>
+          <strong>ラファエルさん</strong>
+        
+          <span class="special-hint move-names">エアカッター / ウィンドライズ / エアブースト</span>
+        </button>
+        <button class="fighter-card" data-fighter="orange">
+          <span class="fighter-emoji orange-frog" style="--frog-body:#ef8c36;--frog-eye-bump:#f6a24e;--frog-iris:#26321d;--frog-mouth:#6b4f1c;--frog-cheek:#f1bc65;position:absolute;left:18px;top:50%;transform:translateY(-50%);--frog-eye-area:#ffffff;">🐸</span>
+          <strong>ウリエルさん</strong>
+        
+          <span class="special-hint move-names">ホワイトカウンター / ガーディアンタックル / ホワイトリーチ</span>
+        </button>
+        <button class="fighter-card" data-fighter="piranha">
+          <span class="fighter-emoji creature-emoji azazel-card-icon" aria-hidden="true">
+<svg viewBox="0 0 100 82" role="img" aria-label="アザゼルさんの顔">
+  <!-- 正面のオニヤンマ風の顔。大きな複眼だけでなく、頭部と黄色い模様をしっかり見せる -->
+  <path d="M22 17 Q50 3 78 17 L86 45 Q82 70 50 76 Q18 70 14 45 Z"
+        fill="#1b1b1b" stroke="#101010" stroke-width="3"/>
+  <!-- 額の黄色 -->
+  <path d="M39 11 Q50 7 61 11 L66 20 Q50 17 34 20 Z" fill="#f2d928"/>
+  <!-- 緑の複眼 -->
+  <ellipse cx="31" cy="34" rx="22" ry="25" fill="#20bfa8" stroke="#111" stroke-width="4"/>
+  <ellipse cx="69" cy="34" rx="22" ry="25" fill="#20bfa8" stroke="#111" stroke-width="4"/>
+  <ellipse cx="26" cy="27" rx="6" ry="10" fill="rgba(255,255,255,.38)"/>
+  <ellipse cx="64" cy="27" rx="6" ry="10" fill="rgba(255,255,255,.38)"/>
+  <!-- 目の間の黒い鼻筋 -->
+  <path d="M46 19 Q50 25 54 19 L57 47 Q50 53 43 47 Z" fill="#151515"/>
+  <!-- オニヤンマらしい黄色い口元 -->
+  <path d="M28 52 Q50 46 72 52 L68 62 Q50 66 32 62 Z" fill="#f2d928" stroke="#111" stroke-width="2"/>
+  <path d="M35 64 Q50 70 65 64" stroke="#f2d928" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M40 58 Q50 62 60 58" stroke="#111" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <!-- 短い触角／顎のシルエット -->
+  <path d="M27 63 L16 75 M73 63 L84 75" stroke="#171717" stroke-width="5" stroke-linecap="round"/>
+</svg></span>
+          <strong>アザゼルさん</strong>
+        
+          <span class="special-hint move-names">追尾連続噛みつき / 急降下アタック / 急降下テール</span>
+        </button>
+        <button class="fighter-card" data-fighter="crayfish">
+          <span class="fighter-emoji creature-emoji belial-card-icon" aria-hidden="true">
+<svg viewBox="0 0 140 110" role="img" aria-label="クモ">
+  <path d="M70 0 C70 16 70 24 70 34" stroke="rgba(250,253,250,.95)" stroke-width="3" fill="none"/>
+  <ellipse cx="70" cy="66" rx="29" ry="32" fill="#44354f"/>
+  <ellipse cx="70" cy="43" rx="21" ry="18" fill="#5a4568"/>
+  <g stroke="#33263c" stroke-width="7" fill="none" stroke-linecap="round">
+    <path d="M53 48 L26 31 L8 24"/><path d="M49 57 L23 49 L4 48"/>
+    <path d="M49 68 L23 76 L6 88"/><path d="M54 79 L31 94 L20 106"/>
+    <path d="M87 48 L114 31 L132 24"/><path d="M91 57 L117 49 L136 48"/>
+    <path d="M91 68 L117 76 L134 88"/><path d="M86 79 L109 94 L120 106"/>
+  </g>
+  <g fill="#e9efe9">
+    <circle cx="61" cy="40" r="3.5"/><circle cx="69" cy="37" r="3.5"/><circle cx="78" cy="40" r="3.5"/>
+    <circle cx="64" cy="47" r="3"/><circle cx="75" cy="47" r="3"/>
+  </g>
+</svg></span>
+          <strong>ベリアルさん</strong>
+        
+          <span class="special-hint move-names">毒液 / 多脚ラッシュ / ウェブトラップ / セイリング・ウェブ</span>
+        </button>
+        <button id="beelzebubCard" class="fighter-card boss-card" data-fighter="beelzebub" hidden>
+          <span class="fighter-emoji boss-frog" style="--frog-body:#111714;--frog-eye-bump:#6eff20;--frog-iris:#b5ff48;--frog-mouth:#70d52b;--frog-cheek:#547232;position:absolute;left:18px;top:50%;transform:translateY(-50%);--frog-eye-area:#ffffff;">🐸</span>
+          <strong>ベルゼブブさん</strong>
+          <span class="special-hint move-names">ヴェノム・ファウンテン / ビー・レイド / アビスショック</span>
+        </button>
+
+      </div>
+
+      <div class="battle-mode-panel">
+        <div class="opponent-pick">
+          <label for="opponentSelect">フリー対戦：対戦相手</label>
+          <select id="opponentSelect">
+            <option value="blue">ガブリエルさん</option>
+            <option value="green">ミカエルさん</option>
+            <option value="black">ルシファーさん</option>
+            <option value="purple">リリスさん</option>
+            <option value="yellow">ラファエルさん</option>
+            <option value="orange">ウリエルさん</option>
+            <option value="piranha">アザゼルさん</option>
+            <option value="crayfish">ベリアルさん</option>
+            <option id="beelzebubOpponent" value="beelzebub" hidden>ベルゼブブさん</option>
+          </select>
+        </div>
+        <div class="story-rule">
+          ストーリー：自分以外の全員＋最後にボス／3敗までOK
+        </div>
+      </div>
+
+      <div class="difficulty-panel">
+        <span class="difficulty-label">難易度</span>
+        <div class="difficulty-buttons">
+          <button type="button" class="difficulty-btn" data-difficulty="easy">イージー</button>
+          <button type="button" class="difficulty-btn selected" data-difficulty="normal">ノーマル</button>
+          <button type="button" class="difficulty-btn" data-difficulty="hard">ハード</button>
+        </div>
+      </div>
+
+      <div class="sound-panel">
+        <span>効果音</span>
+        <button id="soundToggle" type="button" class="sound-toggle">SE ON</button>
+      </div>
+
+      <div class="mode-menu">
+        <button id="fightButton" class="primary-btn">フリー対戦</button>
+        <button id="storyButton" class="primary-btn story-btn">ストーリー</button>
+        <div class="practice-entry-wrap">
+          <button id="practiceBtn" class="practice-btn">操作練習</button>
+          <span class="practice-beginner-badge">← 初めての方はココ</span>
+        </div>
+      </div>
+
+      <p class="auto-attack-note">自動補正：相手が上ならパンチが上向き / 相手が下ならキックが下向き</p>
+      <div id="bossTeaser" class="boss-teaser" hidden>
+        STORY BOSS：ベルゼブブさん
+      </div>
+    </section>
+
+    <section id="gameScreen" class="screen game-screen">
+      <canvas id="gameCanvas"></canvas>
+      <div class="battle-version">v2.5</div>
+      <div id="storyNarrative" class="story-narrative" hidden>
+        <div class="story-narrative-box">
+          <div id="storyNarrativeText" class="story-narrative-text"></div>
+          <button id="storyNarrativeNext" class="primary-btn">次へ</button>
+        </div>
+      </div>
+      <div id="practiceHelp" class="practice-help" hidden>
+        <div class="practice-help-common">
+          舌ボタンで掴み中に、もう一度舌ボタンで舌投げ
+          <div class="practice-help-note">※相手も舌を絡めてきたら投げられない</div>
+        </div>
+        <div id="practiceSpecialTitle" class="practice-help-title"></div>
+        <div id="practiceSpecialMoves" class="practice-help-moves"></div>
+      </div>
+
+      <div id="leafMiniHud" class="leaf-mini-hud" hidden>
+        <strong>LEAF BREAK</strong>
+        <span>残り <b id="leafMiniTime">60.0</b> 秒</span>
+        <span>スコア <b id="leafMiniScore">0</b></span>
+      </div>
+      <div id="guardMiniHud" class="leaf-mini-hud" hidden>
+        <strong>JUST GUARD</strong>
+        <span>残り <b id="guardMiniTime">60.0</b> 秒</span>
+        <span>成功 <b id="guardMiniScore">0</b></span>
+        <span>ミス <b id="guardMiniMiss">0</b></span>
+      </div>
+      <div id="raceMiniHud" class="leaf-mini-hud" hidden>
+        <strong>WATER RACE</strong>
+        <span>TIME <b id="raceMiniTime">0.00</b></span>
+        <span>BEST <b id="raceMiniBest">--</b></span>
+      </div>
+      <div id="basketMiniHud" class="leaf-mini-hud" hidden>
+        <strong>WATER BASKET 1on1</strong>
+        <span>YOU <b id="basketPlayerScore">0</b></span>
+        <span>CPU <b id="basketEnemyScore">0</b></span>
+        <span>残り <b id="basketTime">60.0</b></span>
+      </div>
+      <div id="hud">
+        <div class="hp-wrap left">
+          <span>PLAYER</span>
+          <div class="hp"><i id="playerHp"></i></div>
+        </div>
+        <div id="comboText"></div>
+        <div id="storyHud" class="story-hud" hidden></div>
+        <div class="hp-wrap right">
+          <span>RIVAL</span>
+          <div class="hp"><i id="enemyHp"></i></div>
+        </div>
+      </div>
+
+      <div id="controls">
+        <div id="stickZone" class="stick-zone">
+          <div id="stickBase" class="stick-base">
+            <div id="stickKnob" class="stick-knob"></div>
+          </div>
+        </div>
+        <div class="buttons">
+          <button class="action punch" data-action="punch">パンチ</button>
+          <button class="action kick" data-action="kick">キック</button>
+          <button class="action tongue" data-action="tongue">舌</button>
+          <button class="action guard" data-action="guard">ガード</button>
+        </div>
+      </div>
+
+      <button id="practiceExitButton" class="practice-exit-btn" hidden>練習終了</button>
+      <button id="restartButton" class="restart-btn" hidden>もう一度</button>
+      <button id="titleReturnButton" class="restart-btn title-return-btn" hidden>選択画面に戻る</button>
+    </section>
+
+  </div>
+  <script src="shallow-game.js"></script>
+<a id="mixMapReturn" href="index.html" aria-label="MIXマップへ戻る">MIXマップへ</a>
+</body>
+</html>

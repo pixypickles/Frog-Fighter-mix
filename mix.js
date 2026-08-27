@@ -2,7 +2,8 @@ const board=document.getElementById('board'), roads=document.getElementById('roa
 const mixScript=[...document.scripts].find(s=>/\/mix\.js(?:\?|$)/.test(s.src));
 const MIX_BASE_URL=mixScript ? new URL('./',mixScript.src) : new URL('./',location.href);
 function mixPageUrl(mode){
-  return new URL((mode==='water'?'water-index.html':'ground-index.html')+'?mix=1&battle=1',MIX_BASE_URL).href;
+  const file=mode==='water'?'water-index.html':(mode==='shallow'?'shallow-index.html':'ground-index.html');
+  return new URL(file+'?mix=1&battle=1',MIX_BASE_URL).href;
 }
 
 const msg=document.getElementById('message'), turnLabel=document.getElementById('turnLabel'), sideLabel=document.getElementById('sideLabel');
@@ -40,27 +41,33 @@ const KAWAZU_TEAM_PRACTICE={
  green:{
   name:'ミカエルさん',
   ground:['↑ ＋ パンチ：バーニングアッパー','前 ＋ キック：バーニングキック','下 → 後ろ ＋ キック：バーニングサイクロン','下 → 後ろ ＋ ガード：レッドオーラ（少量回復＋次の攻撃強化）'],
-  water:['↑ ＋ パンチ：バーニングアッパー','前 ＋ キック：バーニングキック','下 → 後ろ ＋ キック：バーニングサイクロン','下 → 後ろ ＋ ガード：レッドオーラ（少量回復＋次の攻撃強化）']
+  water:['↑ ＋ パンチ：バーニングアッパー','前 ＋ キック：バーニングキック','下 → 後ろ ＋ キック：バーニングサイクロン','下 → 後ろ ＋ ガード：レッドオーラ（少量回復＋次の攻撃強化）'],
+  shallow:['↖ / ↑ / ↗：手動ジャンプ','↑ ＋ パンチ：バーニングアッパー','前 ＋ キック：バーニングキック','下 → 後ろ ＋ キック：バーニングサイクロン','下 → 後ろ ＋ ガード：レッドオーラ']
  },
  blue:{
   name:'ガブリエルさん',
   ground:['ガード → パンチ：アクアトルネード（約15°上）','ガード → キック：アクアストリーム（約8°下）','後ろ ＋ パンチ：アクアボルテックス（HP少量吸収）'],
-  water:['ガード → パンチ：アクアトルネード（約15°上）','ガード → キック：アクアストリーム（約8°下）','後ろ ＋ パンチ：アクアボルテックス（HP少量吸収）']
+  water:['ガード → パンチ：アクアトルネード（約15°上）','ガード → キック：アクアストリーム（約8°下）','後ろ ＋ パンチ：アクアボルテックス（HP少量吸収）'],
+  shallow:['↖ / ↑ / ↗：手動ジャンプ','ガード → パンチ：アクアトルネード','ガード → キック：アクアストリーム','後ろ ＋ パンチ：アクアボルテックス（HP少量吸収）']
  },
  yellow:{
   name:'ラファエルさん',
   ground:['ガード → パンチ：エアカッター','ガード → キック：エアカッター','ガード ×2：ヒーリングバブル','↑ ＋ ガード：エアブースト','↑ ＋ パンチ：ウィンドライズ'],
-  water:['ガード → パンチ：水圧カッター','ガード → キック：水圧カッター','ガード ×2：ヒーリングバブル','↑ ＋ ガード：高速バブル移動']
+  water:['ガード → パンチ：水圧カッター','ガード → キック：水圧カッター','ガード ×2：ヒーリングバブル','↑ ＋ ガード：高速バブル移動'],
+  shallow:['↖ / ↑ / ↗：手動ジャンプ','ガード → パンチ：エアカッター','ガード → キック：エアカッター','ガード ×2：ヒーリングバブル','↑ ＋ ガード：エアブースト','↑ ＋ パンチ：ウィンドライズ']
  },
  orange:{
   name:'ウリエルさん',
   ground:['ガード ×2：ホワイトカウンター','後ろ → 前 ＋ ガード：ガーディアンタックル','ガード長押し → 離す：ホワイトオーラ','ホワイトオーラ中：HPが少しずつ回復＋白いリーチ攻撃'],
-  water:['ガード ×2：ホワイトカウンター','後ろ → 前 ＋ ガード：ガーディアンタックル','ガード長押し → 離す：ホワイトオーラ','ホワイトオーラ中：HPが少しずつ回復＋白いリーチ攻撃']
+  water:['ガード ×2：ホワイトカウンター','後ろ → 前 ＋ ガード：ガーディアンタックル','ガード長押し → 離す：ホワイトオーラ','ホワイトオーラ中：HPが少しずつ回復＋白いリーチ攻撃'],
+  shallow:['↖ / ↑ / ↗：手動ジャンプ','ガード ×2：ホワイトカウンター','後ろ → 前 ＋ ガード：ガーディアンタックル','ガード長押し → 離す：ホワイトオーラ','ホワイトオーラ中：HPが少しずつ回復＋白いリーチ攻撃']
  }
 };
 
 function renderMixPractice(){
-  mixPracticeTitle.textContent=practiceModeChoice==='ground'?'🌱 地上バトル練習':'💧 水中バトル練習';
+  mixPracticeTitle.textContent=
+    practiceModeChoice==='ground'?'🌱 地上バトル練習':
+    practiceModeChoice==='shallow'?'🌊 浅瀬バトル練習':'💧 水中バトル練習';
   mixPracticeFighters.innerHTML='';
   Object.entries(KAWAZU_TEAM_PRACTICE).forEach(([type,data])=>{
     const b=document.createElement('button');
@@ -80,10 +87,13 @@ function openMixPractice(mode){
   mixPracticeOverlay.hidden=false;
 }
 document.getElementById('groundPracticeButton').onclick=()=>openMixPractice('ground');
+document.getElementById('shallowPracticeButton').onclick=()=>openMixPractice('shallow');
 document.getElementById('waterPracticeButton').onclick=()=>openMixPractice('water');
 mixPracticeCancel.onclick=()=>{mixPracticeOverlay.hidden=true;};
 mixPracticeGo.onclick=()=>{
-  const file=practiceModeChoice==='ground'?'ground-index.html':'water-index.html';
+  const file=
+    practiceModeChoice==='ground'?'ground-index.html':
+    practiceModeChoice==='shallow'?'shallow-index.html':'water-index.html';
   location.href=new URL(file+'?mixpractice=1&fighter='+encodeURIComponent(practiceFighterChoice),MIX_BASE_URL).href;
 };
 
@@ -187,7 +197,7 @@ const MAP_DEFS={
    P3:{x:73,y:31,name:'葦の池',terrain:'water',base:true,owner:null,links:['P2','W2','D']},
 
    // 旧・敵本拠地側の下ルートも水に変更。
-   W3:{x:87,y:68,name:'東の浅瀬',terrain:'water',base:false,owner:null,links:['D','Z']},
+   W3:{x:87,y:68,name:'東の浅瀬',terrain:'shallow',base:false,owner:null,links:['D','Z']},
    W2:{x:86,y:38,name:'東水路',terrain:'water',base:false,owner:null,links:['P3','Z']},
 
    // ベルゼブブ本拠地を上側へ移動。
@@ -206,7 +216,7 @@ const MAP_DEFS={
    D:{x:76,y:69,name:'東土手',terrain:'land',base:true,owner:null,links:['C','Z','P3']},
    W1:{x:20,y:88,name:'低水路',terrain:'water',base:false,owner:null,links:['K','P1']},
    P1:{x:36,y:34,name:'西沼',terrain:'water',base:true,owner:null,links:['W1','P2','B','S1']},
-   P2:{x:57,y:36,name:'中央沼',terrain:'water',base:false,owner:null,links:['P1','P3','B','C']},
+   P2:{x:57,y:36,name:'中央浅瀬',terrain:'shallow',base:false,owner:null,links:['P1','P3','B','C']},
    P3:{x:76,y:35,name:'東沼',terrain:'water',base:true,owner:null,links:['P2','W2','D']},
    W2:{x:87,y:43,name:'東水路',terrain:'water',base:false,owner:null,links:['P3','Z']},
    Z:{x:92,y:70,name:'ベルゼブブ本拠地',terrain:'both',base:true,owner:'beel',links:['D','W2']}
@@ -391,7 +401,7 @@ function applyBattleResult(){
 }
 function canEnter(u,nid){
  const n=nodes[nid]; if(!n)return false;
- if(n.terrain==='both') return true;
+ if(n.terrain==='both'||n.terrain==='shallow') return true;
  if(u.mobility==='water'&&n.terrain!=='water')return false;
  if(u.mobility==='land'&&n.terrain!=='land')return false;
  return true;
@@ -437,7 +447,7 @@ function render(){
  Object.entries(nodes).forEach(([id,n])=>{
   const b=document.createElement('button');b.className='node '+n.terrain+(n.base?' base':'')+(n.owner?' '+n.owner+'-owned':'');
   b.style.left=n.x+'%';b.style.top=n.y+'%';b.dataset.node=id;
-  const terrainLabel=n.terrain==='water'?'💧 水中':(n.terrain==='both'?'🛡️ 地上/水中選択':'🌱 陸地');
+  const terrainLabel=n.terrain==='water'?'💧 水中':(n.terrain==='shallow'?'🌊 浅瀬':(n.terrain==='both'?'🛡️ 地上/水中選択':'🌱 陸地'));
   const healLabel=n.base?' ❤️ 回復':'';
   b.innerHTML='<b>'+(n.base?'❤️ ':'')+n.name+'</b><small>'+terrainLabel+healLabel+'</small>';
   if(side==='kawazu'&&selected&&nodes[selected.node].links.includes(id)&&canEnter(selected,id)&&!selected.moved&&!selected.wait){
@@ -587,16 +597,17 @@ function encounter(attacker,defender,to){
    saveStrategy();
    const battle={attacker:attacker.id,defender:defender.id,node:to,turn,side,terrain,
     attackerType:attacker.type,defenderType:defender.type,attackerHp:attacker.hp,defenderHp:defender.hp,
-    attackerName:attacker.name,defenderName:defender.name};
+    attackerName:attacker.name,defenderName:defender.name,
+    attackerMobility:attacker.mobility,defenderMobility:defender.mobility};
    sessionStorage.setItem('mixBattle',JSON.stringify(battle));
-   say('遭遇！',attacker.name+' VS '+defender.name+'　'+(terrain==='water'?'水中戦':'地上戦'));
+   say('遭遇！',attacker.name+' VS '+defender.name+'　'+(terrain==='water'?'水中戦':terrain==='shallow'?'浅瀬戦':'地上戦'));
    showRotateThenBattle(terrain,attacker,defender,n);
  });
 }
 function showRotateThenBattle(terrain,a,b,n){
  let ov=document.getElementById('mixRotateOverlay');if(!ov){ov=document.createElement('div');ov.id='mixRotateOverlay';document.body.appendChild(ov)}
  const portrait=false;
- ov.innerHTML='<div class="rotate-card"><div class="rotate-icon">📱</div><b>スマホを横持ちしてください</b><span>'+n.name+'：'+a.name+' VS '+b.name+'</span><small>'+(terrain==='land'?'地上ジャンプバトル（横画面）':'水中バトル')+'</small><button id="mixBattleGo">この向きでバトル開始</button></div>';
+ ov.innerHTML='<div class="rotate-card"><div class="rotate-icon">📱</div><b>スマホを横持ちしてください</b><span>'+n.name+'：'+a.name+' VS '+b.name+'</span><small>'+(terrain==='land'?'地上ジャンプバトル（横画面）':terrain==='shallow'?'浅瀬バトル（空中＋水中）':'水中バトル')+'</small><button id="mixBattleGo">この向きでバトル開始</button></div>';
  ov.classList.add('show');
  const ready=()=>innerWidth>=innerHeight;
  let gone=false;

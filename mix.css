@@ -361,3 +361,17 @@
   filter:none;
 }
 .unit.waiting{opacity:.48}
+
+/* v0.36 浅瀬マス */
+.node.shallow{
+  background:linear-gradient(#8bd7d4 0 42%,#2f90a2 43% 100%) !important;
+  border-color:#bdf8ef !important;
+}
+.road.shallow{stroke:#72d5d1 !important}
+
+.mix-practice-row-3{
+  grid-template-columns:repeat(3,1fr);
+}
+@media(max-width:560px){
+  .mix-practice-row-3{grid-template-columns:1fr}
+}
