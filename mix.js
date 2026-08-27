@@ -198,14 +198,14 @@ const MAP_DEFS={
   nodes:{
    K:{x:8,y:68,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','W1']},
 
-   A:{x:22,y:65,name:'西の蓮葉群',terrain:'land',base:false,owner:null,links:['K','B','P1']},
+   A:{x:22,y:65,name:'西の浅瀬蓮葉',terrain:'shallow',base:false,owner:null,links:['K','B','P1']},
    B:{x:39,y:72,name:'大蓮葉広場',terrain:'land',base:true,owner:null,links:['A','C','P2','S1']},
    S1:{x:35,y:90,name:'蓮の祠',terrain:'land',base:true,owner:null,links:['B']},
    C:{x:57,y:68,name:'水上の蓮道',terrain:'land',base:false,owner:null,links:['B','D','P2']},
-   D:{x:73,y:65,name:'東の蓮葉群',terrain:'land',base:true,owner:null,links:['C','W3','P3']},
+   D:{x:73,y:65,name:'東の浅瀬蓮葉',terrain:'shallow',base:true,owner:null,links:['C','W3','P3']},
 
    W1:{x:18,y:35,name:'西水路',terrain:'water',base:false,owner:null,links:['K','P1']},
-   P1:{x:35,y:31,name:'蓮の池',terrain:'water',base:true,owner:null,links:['W1','P2','A']},
+   P1:{x:35,y:31,name:'西の浅瀬池',terrain:'shallow',base:true,owner:null,links:['W1','P2','A']},
    P2:{x:54,y:34,name:'中央池',terrain:'water',base:true,owner:null,links:['P1','P3','B','C']},
    P3:{x:73,y:31,name:'葦の池',terrain:'water',base:true,owner:null,links:['P2','W2','D']},
 
@@ -292,7 +292,7 @@ function randomBeelTeam(){
 }
 
 let turn=1, side='kawazu', selected=null, cpuBusy=false, units=[];
-let traps={kawazu:{damage:null,stop:null},beel:{damage:null,stop:null}};
+let traps={kawazu:{stop1:null,stop2:null},beel:{stop1:null,stop2:null}};
 
 function deploymentNodes(side,team){
   const home=side==='kawazu'?'K':'Z';
@@ -335,7 +335,13 @@ function restoreStrategy(){
   if(!s||!Array.isArray(s.units))return false;
   selectedMap=s.selectedMap||'map1';
   nodes=cloneNodes(selectedMap);
-  turn=s.turn||1;side=s.side||'kawazu';units=s.units;traps=s.traps||{kawazu:{damage:null,stop:null},beel:{damage:null,stop:null}};kawazuBriefed=!!s.kawazuBriefed;
+  turn=s.turn||1;side=s.side||'kawazu';units=s.units;
+  traps=s.traps||{kawazu:{stop1:null,stop2:null},beel:{stop1:null,stop2:null}};
+  ['kawazu','beel'].forEach(ts=>{
+    const oldStop=traps[ts]&&traps[ts].stop;
+    traps[ts]={stop1:(traps[ts]&&traps[ts].stop1)||oldStop||null,stop2:(traps[ts]&&traps[ts].stop2)||null};
+  });
+  kawazuBriefed=!!s.kawazuBriefed;
   units.forEach(u=>{
     if(typeof u.defeats!=='number')u.defeats=0;
     if(typeof u.sieging!=='boolean')u.sieging=false;
@@ -401,7 +407,7 @@ function applyBattleResult(){
   loser.sieging=false;
   loser.hp=0;
   // 工作兵は何度倒されても常に1ターン。通常キャラは従来どおり加算。
-  loser.wait=loser.engineer?1:(1+loser.defeats);
+  loser.wait=loser.engineer?1:(4+loser.defeats);
   loser.moved=true;
   side=result.returnSide||'kawazu';
   saveStrategy();
@@ -465,10 +471,10 @@ function render(){
  board.querySelectorAll('.node,.unit').forEach(e=>e.remove());
  document.querySelectorAll('.road').forEach(e=>e.classList.remove('active'));
  Object.entries(traps).forEach(([trapSide,t])=>{
-  [['damage','💥'],['stop','🕸️']].forEach(([kind,icon])=>{
+  [['stop1','🕸️'],['stop2','🕸️']].forEach(([kind,icon],trapIndex)=>{
    const nid=t[kind];if(!nid||!nodes[nid])return;
    const mark=document.createElement('span');mark.className='trap-mark '+trapSide;
-   mark.textContent=icon;mark.style.left=nodes[nid].x+'%';mark.style.top=`calc(${nodes[nid].y}% + 28px)`;
+   mark.textContent=icon;mark.style.left=`calc(${nodes[nid].x}% + ${trapIndex?9:-9}px)`;mark.style.top=`calc(${nodes[nid].y}% + 28px)`;
    board.appendChild(mark);
   });
  });
@@ -515,7 +521,7 @@ function selectUnit(u){
  if(u.moved){say(u.name,'このターンは移動済みです。');return}
  selected=u;
  if(u.engineer){
-   say(u.name,'移動先を選択。　<button class="trap-action" onclick="placeTrap(selected,\'damage\')">💥罠</button> <button class="trap-action" onclick="placeTrap(selected,\'stop\')">🕸️罠</button>');
+   say(u.name,'工作員：移動先を選択。　<button class="trap-action" onclick="placeTrap(selected)">🕸️ 足止め罠を設置</button><br><small>足止め罠は同時に2個まで。戦闘では弱い遠隔「ミニボルテックス」が使えます。</small>');
  }else say(u.name,'移動先を選択。');
  render();
 }
@@ -648,22 +654,27 @@ function showRotateThenBattle(terrain,a,b,n){
 function triggerTrap(u,to){
  const enemySide=u.side==='kawazu'?'beel':'kawazu';
  const t=traps[enemySide];
- if(t.damage===to){
-   u.hp=Math.max(1,u.hp-18);
-   t.damage=null;
-   say('ダメージ罠！',u.name+'のHPが18減少。');
- }
- if(t.stop===to){
-   t.stop=null;
-   u.moved=true;
-   say('足止め罠！',u.name+'はこの地点で移動終了。');
+ for(const key of ['stop1','stop2']){
+   if(t[key]===to){
+     t[key]=null;
+     u.moved=true;
+     say('足止め罠！',u.name+'はこの地点で移動終了。');
+     break;
+   }
  }
 }
-function placeTrap(u,kind){
+function placeTrap(u){
  if(!u||!u.engineer||u.wait)return;
- traps[u.side][kind]=u.node;
+ const t=traps[u.side];
+ if(!t.stop1)t.stop1=u.node;
+ else if(!t.stop2)t.stop2=u.node;
+ else{
+   // 3個目を置く場合は古い1個目を消して入れ替える。
+   t.stop1=t.stop2;
+   t.stop2=u.node;
+ }
  saveStrategy();render();
- say(u.name,kind==='damage'?'💥 ダメージ罠を設置しました。':'🕸️ 足止め罠を設置しました。');
+ say(u.name,'🕸️ 足止め罠を設置しました。（最大2個）');
 }
 function moveHuman(to){
  if(!selected)return;
@@ -709,9 +720,10 @@ async function runCpuTurn(){
  for(const u of actors){
   if(side!=='beel')break;await new Promise(r=>setTimeout(r,380));
   if(u.engineer){
-    if(!traps.beel.damage)traps.beel.damage=u.node;
-    else if(!traps.beel.stop)traps.beel.stop=u.node;
-    else if(Math.random()<.45)traps.beel[Math.random()<.5?'damage':'stop']=u.node;
+    const t=traps.beel;
+    if(!t.stop1)t.stop1=u.node;
+    else if(!t.stop2)t.stop2=u.node;
+    else if(Math.random()<.45){t.stop1=t.stop2;t.stop2=u.node;}
     saveStrategy();render();
   }
   const to=chooseCpuMove(u);if(!to){u.moved=true;continue}
@@ -727,7 +739,9 @@ function healSide(which){
  units.filter(u=>u.side===which).forEach(u=>{
   if(u.wait>0){u.wait--;if(u.wait===0)u.hp=100;return}
   // 総大将は拠点にいてもHP回復しない。長期戦での全回復ループを防ぐ。
-  const n=nodes[u.node];if(!u.leader&&n.owner===which&&n.base)u.hp=Math.min(100,u.hp+18);
+  const n=nodes[u.node];
+  // v0.45: 回復拠点は1ターンにつきHP+50。瀕死でも2ターン滞在すれば全快できる。
+  if(!u.leader&&n.owner===which&&n.base)u.hp=Math.min(100,u.hp+50);
  });
 }
 function beginHumanTurn(){
@@ -743,7 +757,7 @@ document.getElementById('endTurn').onclick=()=>{
  if(side==='beel'&&!cpuBusy){runCpuTurn();return;}
  endHumanTurn();
 };
-document.getElementById('resetGame').onclick=()=>{if(confirm('最初からやり直しますか？')){sessionStorage.removeItem('mixStrategyState');sessionStorage.removeItem('mixBattleResult');Object.values(nodes).forEach(n=>{n.owner=n.base?(n===nodes.K?'kawazu':n===nodes.Z?'beel':null):null});makeUnits();traps={kawazu:{damage:null,stop:null},beel:{damage:null,stop:null}};turn=1;side='kawazu';selected=null;cpuBusy=false;saveStrategy();render();say('カワズ軍のターン','駒をタップすると進める道が光ります。')}};
+document.getElementById('resetGame').onclick=()=>{if(confirm('最初からやり直しますか？')){sessionStorage.removeItem('mixStrategyState');sessionStorage.removeItem('mixBattleResult');Object.values(nodes).forEach(n=>{n.owner=n.base?(n===nodes.K?'kawazu':n===nodes.Z?'beel':null):null});makeUnits();traps={kawazu:{stop1:null,stop2:null},beel:{stop1:null,stop2:null}};turn=1;side='kawazu';selected=null;cpuBusy=false;saveStrategy();render();say('カワズ軍のターン','駒をタップすると進める道が光ります。')}};
 
 const resumedStrategy=restoreStrategy();
 if(!resumedStrategy)makeUnits();

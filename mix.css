@@ -451,3 +451,19 @@
   .result-card h2{font-size:26px}
   .result-card p{line-height:1.4;margin:6px 0}
 }
+
+/* v0.44 工作員：小型＋工具ゴーグルで明確に識別 */
+.unit.frog-pascal .map-frog:after,
+.unit.frog-malphas .map-frog:after{
+  box-shadow:0 0 0 2px #ffe45c, -13px 0 0 -2px #ffe45c;
+}
+.unit.frog-pascal .map-frog,
+.unit.frog-malphas .map-frog{
+  outline:2px dashed #ffe45c;
+  outline-offset:2px;
+}
+.unit.frog-pascal:after,.unit.frog-malphas:after{
+  content:"🔧";
+  position:absolute;right:-8px;bottom:-8px;font-size:12px;
+  filter:drop-shadow(0 1px 1px #000);
+}

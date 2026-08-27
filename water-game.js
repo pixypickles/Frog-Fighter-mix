@@ -70,6 +70,7 @@
   let guardWaves = [];
   let aquaTornadoes = [];
   let aquaVortices = [];
+  let engineerShots = [];
   let michaelAuraShots = [];
   let toxicWaters=[];
   let bossFish=[];
@@ -107,7 +108,9 @@
     piranha: { speed: 198, tongue: 0,   damage: 1.08, defense:0.90, sink:3, hue:0, scale:0.95 },
     crayfish:{ speed: 138, tongue: 0,   damage: 1.18, defense:1.20, sink:10,hue:0, scale:1.08 },
     beelzebub:{speed: 158, tongue: 415, damage: 1.28, defense:1.22, sink:8, hue:0, scale:1.13},
-    kawazu: {speed: 220, tongue: 225, damage: 0.94, defense:0.94, sink:4, hue:0, scale:0.86}
+    kawazu: {speed: 220, tongue: 225, damage: 0.94, defense:0.94, sink:4, hue:0, scale:0.86},
+    pascal: {speed: 176, tongue: 185, damage: 0.68, defense:0.86, sink:4, hue:0, scale:0.78},
+    malphas:{speed: 174, tongue: 185, damage: 0.68, defense:0.86, sink:4, hue:0, scale:0.78}
   };
 
   function show(name) {
@@ -688,6 +691,12 @@
       };
     }
 
+    if(type==='pascal'){
+      return {body:'#75c968',limb:'#65b45c',light:'#a8ef87',belly:'#dff2b3',eyeBump:'#90dc74'};
+    }
+    if(type==='malphas'){
+      return {body:'#76588f',limb:'#674c80',light:'#b38bd0',belly:'#d6b7e7',eyeBump:'#9b72ba'};
+    }
     if(type==='black'){
       return {
         body:'#3b4048',
@@ -1769,6 +1778,16 @@
         ctx.moveTo(15,47);
         ctx.lineTo(48,68);
         ctx.stroke();
+        ctx.restore();
+      }
+
+      if(this.type==='pascal'||this.type==='malphas'){
+        // 工作員は黄色い工具ゴーグル＋胸の工具マークで通常カエルと区別。
+        ctx.save();
+        ctx.strokeStyle='#ffe45c';ctx.lineWidth=4;
+        ctx.beginPath();ctx.arc(-15,-27,10,0,Math.PI*2);ctx.arc(15,-27,10,0,Math.PI*2);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(-5,-27);ctx.lineTo(5,-27);ctx.stroke();
+        ctx.fillStyle='#ffe45c';ctx.font='bold 15px sans-serif';ctx.textAlign='center';ctx.fillText('🔧',0,25);
         ctx.restore();
       }
 
@@ -3807,10 +3826,27 @@
     return true;
   }
 
+  function specialEngineerMiniVortex(f){
+    if(gameOver||!f||(f.type!=='pascal'&&f.type!=='malphas')||f.stun>0||f.guard||f.specialT>0)return false;
+    f.specialType='engineerMiniVortex';f.specialT=.34;f.attack='punch';f.attackT=.34;
+    engineerShots.push({
+      owner:f,x:f.x+f.face*42,y:f.y+4,
+      vx:f.face*305,vy:0,r:14,t:1.35,life:1.35,spin:0,hit:false
+    });
+    comboEl.textContent='ミニボルテックス!';
+    setTimeout(()=>{if(comboEl.textContent==='ミニボルテックス!')comboEl.textContent='';},520);
+    return true;
+  }
+
   function trySpecial(f,kind){
     if(!f) return false;
     const forward=f.face>0?'right':'left';
     const back=f.face>0?'left':'right';
+    if((f.type==='pascal'||f.type==='malphas') && kind==='punch'){
+      clearCommand();
+      return specialEngineerMiniVortex(f);
+    }
+
 
     // カワズさん：4キャラ運用を前提に入力を短く。
     if(f.type==='kawazu'){
@@ -4966,6 +5002,22 @@ function drawBackground(dt){
         ctx.fillStyle='rgba(255,55,35,.85)';ctx.shadowColor='#ff2a18';ctx.shadowBlur=16;
         ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();ctx.restore();
       });
+      engineerShots.forEach(q=>{
+        q.t-=dt;q.x+=q.vx*dt;q.y+=q.vy*dt;q.spin+=dt*9;
+        const target=q.owner&&q.owner.isPlayer?enemy:player;
+        if(target&&!q.hit&&Math.hypot(target.x-q.x,target.y-q.y)<target.radius+q.r+4){
+          q.hit=true;q.t=0;
+          if(projectileImmuneByBubble(target))spawnImpact(target.x,target.y,'guard');
+          else{
+            q.owner._projectileHit=true;
+            damageHit(q.owner,target,2.4*q.owner.damageMul,42*q.owner.face,-5);
+            q.owner._projectileHit=false;
+            spawnImpact(q.x,q.y,'hit');
+          }
+        }
+      });
+      engineerShots=engineerShots.filter(q=>q.t>0&&q.x>-50&&q.x<innerWidth+50);
+
       aquaVortices.forEach(v=>{
         v.t-=dt;
         v.spin+=dt*8.5;
@@ -5648,6 +5700,17 @@ function drawBackground(dt){
     });
 
     // ガブリエルさん：その場に残る小型渦
+    engineerShots.forEach(q=>{
+      const a=Math.max(0,q.t/q.life);
+      ctx.save();ctx.translate(q.x,q.y);ctx.rotate(q.spin);
+      ctx.globalCompositeOperation='lighter';
+      ctx.globalAlpha=.70*a;ctx.strokeStyle='#d8fbff';ctx.lineWidth=3;
+      ctx.beginPath();ctx.arc(0,0,q.r,.15*Math.PI,1.75*Math.PI);ctx.stroke();
+      ctx.globalAlpha=.45*a;ctx.strokeStyle='#79d9e8';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(0,0,q.r-5,.2*Math.PI,1.7*Math.PI);ctx.stroke();
+      ctx.restore();
+    });
+
     aquaVortices.forEach(v=>{
       const a=Math.max(0,v.t/v.life);
       ctx.save();
