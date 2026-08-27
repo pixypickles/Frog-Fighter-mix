@@ -108,11 +108,12 @@
 
   const SHALLOW_AIR_GRAVITY=650;
   const SHALLOW_WATER_GRAVITY=68;
-  const SHALLOW_JUMP_SPEED=390;
-  const SHALLOW_PAD_JUMP_SPEED=515;
+  const SHALLOW_JUMP_SPEED=300;
+  const SHALLOW_PAD_JUMP_SPEED=390;
   const shallowLotusXs=[.34,.66];
   function shallowWaterSurface(){
-    return Math.min(innerHeight-128,Math.max(225,innerHeight*.70));
+    // v0.38: 水面を少し下げ、空中スペースを確保。
+    return Math.min(innerHeight-92,Math.max(245,innerHeight*.76));
   }
   function shallowIsUnderwater(f){
     return !!f && f.y>=shallowWaterSurface();
@@ -866,6 +867,8 @@
       this.spinAngle=0;
       this.shallowMobility='both';
       this.shallowJumpLock=0;
+      this.shallowJumpStartY=null;
+      this.shallowJumpMaxRise=0;
     }
     update(dt) {
       if (this.stun>0) this.stun-=dt;
@@ -1223,6 +1226,19 @@
         }
       }
 
+      // 端末の縦横比が違っても天井へ届かないよう、ジャンプごとに上昇量を制限。
+      if(this.shallowJumpStartY!==null && this.shallowJumpMaxRise>0){
+        const jumpCeil=this.shallowJumpStartY-this.shallowJumpMaxRise;
+        if(this.y<jumpCeil){
+          this.y=jumpCeil;
+          if(this.vy<0)this.vy=0;
+        }
+        if(this.vy>=0 && this.y>=this.shallowJumpStartY-8){
+          this.shallowJumpStartY=null;
+          this.shallowJumpMaxRise=0;
+        }
+      }
+
       this.x=Math.max(45,Math.min(innerWidth-45,this.x));
       this.y=Math.max(minY,Math.min(maxY,this.y));
 
@@ -1231,6 +1247,8 @@
       if(this.vy>=0 && shallowOnLotus(this) && !this.throwState){
         this.vy=-SHALLOW_PAD_JUMP_SPEED;
         this.y=shallowWaterSurface()-50;
+        this.shallowJumpStartY=this.y;
+        this.shallowJumpMaxRise=142;
         this.shallowJumpLock=.35;
         spawnImpact(this.x,this.y,'guard');
       }
@@ -5114,8 +5132,10 @@ function drawBackground(dt){
           const nearSurface=player.y>shallowWaterSurface()-20;
           if(nearBottom||nearSurface){
             player.vy=-SHALLOW_JUMP_SPEED;
+            player.shallowJumpStartY=player.y;
+            player.shallowJumpMaxRise=92;
             // ↖ / ↗ は少し横にも飛ぶ。
-            if(Math.abs(ix)>.25)player.vx+=Math.sign(ix)*95;
+            if(Math.abs(ix)>.25)player.vx+=Math.sign(ix)*82;
             player.shallowJumpLock=.42;
           }
         }
@@ -5127,7 +5147,7 @@ function drawBackground(dt){
         if(enemy.shallowMobility==='water' && under && player){
           enemy.vy += Math.max(-1,Math.min(1,(player.y-enemy.y)/120))*enemy.speed*dt*1.1;
         }else if(enemy.shallowMobility!=='land' && enemy.y>landFloorY()-25 && Math.random()<dt*.85){
-          enemy.vy=-SHALLOW_JUMP_SPEED*.92;
+          enemy.vy=-SHALLOW_JUMP_SPEED*.90;
         }
       }
       player.update(dt);enemy.update(dt);

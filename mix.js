@@ -15,6 +15,7 @@ const mixResultOverlay=document.getElementById('mixResultOverlay');
 const hqTerrainOverlay=document.getElementById('hqTerrainOverlay');
 const hqTerrainText=document.getElementById('hqTerrainText');
 const hqLandChoice=document.getElementById('hqLandChoice');
+const hqShallowChoice=document.getElementById('hqShallowChoice');
 const hqWaterChoice=document.getElementById('hqWaterChoice');
 
 const mapSelectOverlay=document.getElementById('mapSelectOverlay');
@@ -165,13 +166,13 @@ document.getElementById('mixResultRestart').onclick=()=>{
 
 const MAP_DEFS={
  map1:{
-  name:'小さな田んぼ道',
+  name:'小さな蓮池',
   nodes:{
    K:{x:9,y:72,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','W1']},
 
-   A:{x:28,y:69,name:'西あぜ道',terrain:'land',base:false,owner:null,links:['K','B']},
-   B:{x:50,y:64,name:'中央広場',terrain:'land',base:true,owner:null,links:['A','C','P1']},
-   C:{x:72,y:62,name:'東あぜ道',terrain:'land',base:false,owner:null,links:['B','W2']},
+   A:{x:28,y:69,name:'西の大蓮葉',terrain:'land',base:false,owner:null,links:['K','B']},
+   B:{x:50,y:64,name:'中央の大蓮葉',terrain:'land',base:true,owner:null,links:['A','C','P1']},
+   C:{x:72,y:62,name:'東の大蓮葉',terrain:'land',base:false,owner:null,links:['B','W2']},
 
    W1:{x:28,y:36,name:'西の池',terrain:'water',base:false,owner:null,links:['K','P1']},
    P1:{x:51,y:34,name:'中央池',terrain:'water',base:true,owner:null,links:['W1','W2','B']},
@@ -185,11 +186,11 @@ const MAP_DEFS={
   nodes:{
    K:{x:8,y:68,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','W1']},
 
-   A:{x:22,y:65,name:'西草地',terrain:'land',base:false,owner:null,links:['K','B','P1']},
-   B:{x:39,y:72,name:'畑の広場',terrain:'land',base:true,owner:null,links:['A','C','P2','S1']},
-   S1:{x:35,y:90,name:'石の祠',terrain:'land',base:true,owner:null,links:['B']},
-   C:{x:57,y:68,name:'土手道',terrain:'land',base:false,owner:null,links:['B','D','P2']},
-   D:{x:73,y:65,name:'東草地',terrain:'land',base:true,owner:null,links:['C','W3','P3']},
+   A:{x:22,y:65,name:'西の蓮葉群',terrain:'land',base:false,owner:null,links:['K','B','P1']},
+   B:{x:39,y:72,name:'大蓮葉広場',terrain:'land',base:true,owner:null,links:['A','C','P2','S1']},
+   S1:{x:35,y:90,name:'蓮の祠',terrain:'land',base:true,owner:null,links:['B']},
+   C:{x:57,y:68,name:'水上の蓮道',terrain:'land',base:false,owner:null,links:['B','D','P2']},
+   D:{x:73,y:65,name:'東の蓮葉群',terrain:'land',base:true,owner:null,links:['C','W3','P3']},
 
    W1:{x:18,y:35,name:'西水路',terrain:'water',base:false,owner:null,links:['K','P1']},
    P1:{x:35,y:31,name:'蓮の池',terrain:'water',base:true,owner:null,links:['W1','P2','A']},
@@ -209,11 +210,11 @@ const MAP_DEFS={
   name:'湿地の包囲網',
   nodes:{
    K:{x:8,y:70,name:'カワズ本拠地',terrain:'both',base:true,owner:'kawazu',links:['A','W1']},
-   A:{x:22,y:70,name:'西土手',terrain:'land',base:false,owner:null,links:['K','B','S1']},
-   S1:{x:19,y:45,name:'木陰の祠',terrain:'land',base:true,owner:null,links:['A','P1']},
-   B:{x:39,y:62,name:'分岐広場',terrain:'land',base:true,owner:null,links:['A','C','P1','P2']},
-   C:{x:58,y:70,name:'湿地道',terrain:'land',base:false,owner:null,links:['B','D','P2']},
-   D:{x:76,y:69,name:'東土手',terrain:'land',base:true,owner:null,links:['C','Z','P3']},
+   A:{x:22,y:70,name:'西の大蓮葉',terrain:'land',base:false,owner:null,links:['K','B','S1']},
+   S1:{x:19,y:45,name:'木陰の蓮葉',terrain:'land',base:true,owner:null,links:['A','P1']},
+   B:{x:39,y:62,name:'蓮葉分岐',terrain:'land',base:true,owner:null,links:['A','C','P1','P2']},
+   C:{x:58,y:70,name:'水上蓮道',terrain:'land',base:false,owner:null,links:['B','D','P2']},
+   D:{x:76,y:69,name:'東の大蓮葉',terrain:'land',base:true,owner:null,links:['C','Z','P3']},
    W1:{x:20,y:88,name:'低水路',terrain:'water',base:false,owner:null,links:['K','P1']},
    P1:{x:36,y:34,name:'西沼',terrain:'water',base:true,owner:null,links:['W1','P2','B','S1']},
    P2:{x:57,y:36,name:'中央浅瀬',terrain:'shallow',base:false,owner:null,links:['P1','P3','B','C']},
@@ -400,11 +401,26 @@ function applyBattleResult(){
  }catch(e){return false}
 }
 function canEnter(u,nid){
- const n=nodes[nid]; if(!n)return false;
- if(n.terrain==='both'||n.terrain==='shallow') return true;
- if(u.mobility==='water'&&n.terrain!=='water')return false;
- if(u.mobility==='land'&&n.terrain!=='land')return false;
- return true;
+ const n=nodes[nid];
+ return !!n; // v0.39: 盤面はすべて水域。専門キャラも全マス移動可能。
+}
+
+// 地形専門同士の「すれ違い」ルール。
+// 大きな蓮葉(地上戦)では水専門と接触戦にならず、
+// 水中マスでは陸専門と接触戦にならない。浅瀬では全員が交戦可能。
+// 本拠地の総大将戦は防衛側が地形を選ぶため、ここでは常に交戦対象。
+function canBattleOnNode(a,b,nid){
+  const n=nodes[nid];
+  if(!n)return false;
+  if(nid==='K'||nid==='Z')return true;
+  if(n.terrain==='shallow')return true;
+  if(n.terrain==='land'){
+    return a.mobility!=='water' && b.mobility!=='water';
+  }
+  if(n.terrain==='water'){
+    return a.mobility!=='land' && b.mobility!=='land';
+  }
+  return true;
 }
 function roadKey(a,b){return [a,b].sort().join('-')}
 function renderRoads(){
@@ -447,7 +463,7 @@ function render(){
  Object.entries(nodes).forEach(([id,n])=>{
   const b=document.createElement('button');b.className='node '+n.terrain+(n.base?' base':'')+(n.owner?' '+n.owner+'-owned':'');
   b.style.left=n.x+'%';b.style.top=n.y+'%';b.dataset.node=id;
-  const terrainLabel=n.terrain==='water'?'💧 水中':(n.terrain==='shallow'?'🌊 浅瀬':(n.terrain==='both'?'🛡️ 地上/水中選択':'🌱 陸地'));
+  const terrainLabel=n.terrain==='water'?'💧 水中':(n.terrain==='shallow'?'🪷 浅瀬（小さな蓮葉）':(n.terrain==='both'?'🛡️ 防衛地形選択':'🪷🪷 大蓮葉（地上戦）'));
   const healLabel=n.base?' ❤️ 回復':'';
   b.innerHTML='<b>'+(n.base?'❤️ ':'')+n.name+'</b><small>'+terrainLabel+healLabel+'</small>';
   if(side==='kawazu'&&selected&&nodes[selected.node].links.includes(id)&&canEnter(selected,id)&&!selected.moved&&!selected.wait){
@@ -492,20 +508,19 @@ function selectUnit(u){
  render();
 }
 function cpuChooseHqTerrain(attacker,defender){
-  // 防衛側ベルゼブブ軍の選択。
-  // EASYは攻撃側が入りやすい地形、HARDは入りにくい地形を少し優先。
+  // 本拠地では防衛側が「大蓮葉(地上) / 浅瀬 / 水中」から選択。
   const attackerMob=attacker.mobility||'both';
   if(mixDifficulty==='easy'){
-    if(attackerMob==='water')return 'water';
-    if(attackerMob==='land')return 'land';
-    return Math.random()<.5?'land':'water';
+    if(attackerMob==='water')return Math.random()<.65?'water':'shallow';
+    if(attackerMob==='land')return Math.random()<.65?'land':'shallow';
+    return ['land','shallow','water'][Math.floor(Math.random()*3)];
   }
   if(mixDifficulty==='hard'){
-    if(attackerMob==='water')return 'land';
-    if(attackerMob==='land')return 'water';
-    return Math.random()<.5?'water':'land';
+    if(attackerMob==='water')return Math.random()<.65?'land':'shallow';
+    if(attackerMob==='land')return Math.random()<.65?'water':'shallow';
+    return ['land','shallow','water'][Math.floor(Math.random()*3)];
   }
-  return Math.random()<.5?'land':'water';
+  return ['land','shallow','water'][Math.floor(Math.random()*3)];
 }
 
 function chooseHqTerrain(attacker,defender,to,done){
@@ -525,22 +540,24 @@ function chooseHqTerrain(attacker,defender,to,done){
 
   // カワズ本拠地を守るのはプレイヤーなので自分で選ぶ。
   if(defender.side==='kawazu'){
-    hqTerrainText.textContent='カワズさんが本拠地を防衛！　地上と水中、どちらで迎え撃ちますか？';
+    hqTerrainText.textContent='カワズさんが本拠地を防衛！　地上・浅瀬・水中から迎え撃つ場所を選択。';
     hqTerrainOverlay.hidden=false;
     const finish=(terrain)=>{
       hqTerrainOverlay.hidden=true;
       hqLandChoice.onclick=null;
+      hqShallowChoice.onclick=null;
       hqWaterChoice.onclick=null;
       done(terrain);
     };
     hqLandChoice.onclick=()=>finish('land');
+    hqShallowChoice.onclick=()=>finish('shallow');
     hqWaterChoice.onclick=()=>finish('water');
     return;
   }
 
   // ベルゼブブ本拠地ではCPU防衛側が選択。
   const terrain=cpuChooseHqTerrain(attacker,defender);
-  say('ベルゼブブさんの防衛地形',terrain==='water'?'水中戦を選択！':'地上戦を選択！');
+  say('ベルゼブブさんの防衛地形',terrain==='water'?'水中戦を選択！':terrain==='shallow'?'浅瀬戦を選択！':'地上戦を選択！');
   setTimeout(()=>done(terrain),650);
 }
 
@@ -647,7 +664,7 @@ function moveHuman(to){
  triggerTrap(u,to);
  const n=nodes[to];
  if(!n.base)n.owner='kawazu';
- const enemies=units.filter(x=>x.node===to&&x.side==='beel'&&!x.wait);
+ const enemies=units.filter(x=>x.node===to&&x.side==='beel'&&!x.wait&&canBattleOnNode(u,x,to));
  selected=null;
  render();
  if(enemies.length){
@@ -666,7 +683,7 @@ function distanceToTarget(start,target){
 }
 function chooseCpuMove(u){
  const opts=nodes[u.node].links.filter(id=>canEnter(u,id));if(!opts.length)return null;
- const attack=opts.find(id=>units.some(x=>x.side==='kawazu'&&!x.wait&&x.node===id));if(attack)return attack;
+ const attack=opts.find(id=>units.some(x=>x.side==='kawazu'&&!x.wait&&x.node===id&&canBattleOnNode(u,x,id)));if(attack)return attack;
  // まず未占領の拠点を少し優先、その後カワズ本拠地へ。
  opts.sort((a,b)=>{
   const ba=(nodes[a].base&&nodes[a].owner!=='beel')?-3:0,bb=(nodes[b].base&&nodes[b].owner!=='beel')?-3:0;
@@ -687,7 +704,7 @@ async function runCpuTurn(){
   }
   const to=chooseCpuMove(u);if(!to){u.moved=true;continue}
   u.node=to;u.sieging=false;u.moved=true;triggerTrap(u,to);const n=nodes[to];if(!n.base)n.owner='beel';render();
-  const enemies=units.filter(x=>x.side==='kawazu'&&!x.wait&&x.node===to);
+  const enemies=units.filter(x=>x.side==='kawazu'&&!x.wait&&x.node===to&&canBattleOnNode(u,x,to));
   const enemy=chooseDefenderForCpu(enemies,to);
   if(enemy){cpuBusy=false;saveStrategy();encounter(u,enemy,to);return}
   say(u.name,n.name+'へ進軍。');

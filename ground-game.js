@@ -5014,18 +5014,42 @@ function drawBackground(dt){
       ctx.fill();
     }
 
-    // Compact ground: controls remain inside the soil while preserving more sky.
-    // Collision uses landFloorY(), so the frogs stand on the same top edge we draw here.
+    // v0.38: 「地上」は乾いた地面ではなく、蓮の葉が水面を覆い尽くした足場。
+    // 当たり判定・地上戦の物理はそのままで、世界全体を水場として統一する。
     const groundTop=landGroundTop();
-    ctx.fillStyle=th.floor;
-    ctx.fillRect(0,groundTop,innerWidth,16);
-    ctx.fillStyle=th.soil;
-    ctx.fillRect(0,groundTop+16,innerWidth,innerHeight-groundTop-16);
 
-    ctx.strokeStyle='rgba(42,104,48,.62)';ctx.lineWidth=3;ctx.lineCap='round';
-    for(let x=12;x<innerWidth;x+=34){
-      ctx.beginPath();ctx.moveTo(x,groundTop);ctx.lineTo(x-4,groundTop-13);ctx.stroke();
-      ctx.beginPath();ctx.moveTo(x+5,groundTop);ctx.lineTo(x+10,groundTop-9);ctx.stroke();
+    const water=ctx.createLinearGradient(0,groundTop,0,innerHeight);
+    water.addColorStop(0,'rgba(77,181,190,.82)');
+    water.addColorStop(1,'rgba(24,103,135,.95)');
+    ctx.fillStyle=water;
+    ctx.fillRect(0,groundTop,innerWidth,innerHeight-groundTop);
+
+    // 水面の細い反射
+    ctx.strokeStyle='rgba(225,255,249,.65)';
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    for(let x=0;x<=innerWidth;x+=18){
+      const y=groundTop+3+Math.sin(performance.now()/420+x*.06)*2;
+      if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+
+    // 蓮の葉を重ねて、水面が見えないくらいの「蓮の葉の地面」にする。
+    for(let row=0;row<2;row++){
+      const y=groundTop+7+row*16;
+      const step=42;
+      for(let x=-20+(row?21:0);x<innerWidth+30;x+=step){
+        const wob=Math.sin(performance.now()/700+x*.035+row)*1.5;
+        ctx.save();
+        ctx.translate(x,y+wob);
+        ctx.fillStyle=row?'#4b9b50':'#59ad59';
+        ctx.strokeStyle='rgba(28,87,38,.82)';
+        ctx.lineWidth=1.5;
+        ctx.beginPath();ctx.ellipse(0,0,27,9,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+        ctx.fillStyle='rgba(113,193,103,.58)';
+        ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(18,-5);ctx.lineTo(13,4);ctx.closePath();ctx.fill();
+        ctx.restore();
+      }
     }
   }
 

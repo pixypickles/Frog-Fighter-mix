@@ -375,3 +375,30 @@
 @media(max-width:560px){
   .mix-practice-row-3{grid-template-columns:1fr}
 }
+
+/* v0.39 盤面全体を水域として表現 */
+.board:before{
+  content:"";
+  position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(ellipse at 14% 22%,rgba(255,255,255,.12),transparent 16%),
+    radial-gradient(ellipse at 67% 48%,rgba(255,255,255,.08),transparent 20%),
+    linear-gradient(rgba(52,150,171,.10),rgba(19,101,137,.16));
+}
+.node.land{
+  background:
+    radial-gradient(ellipse at 28% 35%,#68b866 0 22%,transparent 23%),
+    radial-gradient(ellipse at 63% 30%,#4fa658 0 24%,transparent 25%),
+    radial-gradient(ellipse at 50% 68%,#5cad5b 0 25%,transparent 26%),
+    #237f97 !important;
+  border-color:#b8f2b6 !important;
+}
+.node.shallow{
+  background:
+    radial-gradient(ellipse at 43% 43%,#61b361 0 22%,transparent 23%),
+    radial-gradient(ellipse at 66% 62%,#55a75b 0 14%,transparent 15%),
+    #3b9fb0 !important;
+}
+.node.water{background:#287f9f !important}
+.hq-terrain-buttons-3{grid-template-columns:repeat(3,1fr)!important}
+@media(max-width:520px){.hq-terrain-buttons-3{grid-template-columns:1fr!important}}
