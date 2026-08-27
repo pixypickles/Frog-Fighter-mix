@@ -3384,18 +3384,14 @@
     if(gameOver || !f || f.stun>0 || f.specialT>0 || f.bossSpecialCooldown>0) return false;
     f.guard=false; f.specialType='venomWater'; f.specialT=.68; f.bossSpecialCooldown=2.4;
 
-    // 地上版：真上＋左右の3方向へ噴水のようにいったん打ち上げてから落下。
+    // v0.41 浅瀬版：毒は空中へ大きく広げず、水面へ落として水中に拡散させる。
     [
-      {vx:-330,vy:-520},
-      {vx:0,   vy:-610},
-      {vx:330, vy:-520}
+      {vx:-185,vy:-145},{vx:0,vy:-175},{vx:185,vy:-145}
     ].forEach((v,i)=>{
       toxicWaters.push({
-        owner:f,t:5.4,life:5.4,tick:0,
-        x:f.x+(i-1)*10,y:f.y-24,
-        vx:v.vx,vy:v.vy,r:19,
-        landed:false,seed:Math.random()*1000,
-        airHitAt:0
+        owner:f,t:4.5,life:4.5,tick:0,
+        x:f.x+(i-1)*8,y:Math.min(f.y+8,shallowWaterSurface()-18),
+        vx:v.vx,vy:v.vy,r:15,landed:false,seed:Math.random()*1000,airHitAt:0
       });
     });
 
@@ -5297,34 +5293,22 @@ function drawBackground(dt){
           v.x+=v.vx*dt;
           v.y+=v.vy*dt;
 
-          // 空中の毒液そのものにも当たり判定。ガード時は継続毒を付与しない。
-          if(target){
-            const now=performance.now();
-            if(Math.hypot(target.x-v.x,target.y-v.y)<target.radius+v.r+7 && now-(v.airHitAt||0)>650){
-              v.airHitAt=now;
-              const guarded=target.guard;
-              v.owner._projectileHit=true;
-              damageHit(v.owner,target,2.0*v.owner.damageMul,22*Math.sign(v.vx||v.owner.face),18);
-              v.owner._projectileHit=false;
-              if(!guarded) applyPoisonDot(v.owner,target,4,.50);
-            }
-          }
-
+          // 浅瀬では空中の飛沫にダメージ判定なし。水面へ入ってから毒エリアになる。
           const floor=shallowWaterSurface()+8;
           if(v.y>=floor){
             v.y=floor;v.vx=0;v.vy=0;v.landed=true;
-            v.r=Math.max(310,innerWidth*.62);v.tick=0;spawnImpact(v.x,v.y,'hit');
+            v.r=Math.max(190,innerWidth*.40);v.tick=0;spawnImpact(v.x,v.y,'hit');
           }
         }else{
           // 地面に残った毒溜まり。触れ続けると周期ダメージ。
           v.tick-=dt;
           if(target&&v.tick<=0&&Math.hypot(target.x-v.x,target.y-v.y)<target.radius+v.r+18){
-            v.tick=.48;
+            v.tick=.62;
             const guarded=target.guard;
             v.owner._projectileHit=true;
-            damageHit(v.owner,target,1.45*v.owner.damageMul,0,-12);
+            damageHit(v.owner,target,1.05*v.owner.damageMul,0,-8);
             v.owner._projectileHit=false;
-            if(!guarded) applyPoisonDot(v.owner,target,2,.38);
+            if(!guarded) applyPoisonDot(v.owner,target,2,.26);
           }
         }
       });
